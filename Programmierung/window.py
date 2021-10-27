@@ -1,11 +1,15 @@
 import numpy
 import pygame
 import random
+
+from pygame.constants import K_1, K_2, K_3, K_5, K_6, K_7, K_8, K_9
 from settings import settings as st
 import json
 from Sudoku import Sudoku
 class window:
-    color_highlights = [(255,255,255),(227, 68, 68)]
+
+    colors = [(255,255,255),(244, 40, 40),(145, 42, 42),(145, 156, 154)]
+
     def __init__(self):
         self.running = True
         self.Sudoku_cur = Sudoku()
@@ -14,7 +18,6 @@ class window:
         self.font_height = 45
         self.rects = []
         self.highlighted = [[0 for x in range(9)] for x in range(9)]
-        print(self.highlighted)
         pygame.init()
         pygame.font.init()
         pygame.display.set_caption('Sudoku')
@@ -24,37 +27,51 @@ class window:
         self.show_background()
         self.show_grid()
 
+    
+
     def event_loop(self):
+
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        self.x_calibration += 1
-                        self.show_grid()
-                        print(self.x_calibration)
-                        self.render_number2()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        self.y_calibration += 1
-                        self.show_grid()
-                        print(self.y_calibration)
-                        self.render_number2()
-                if event.type == pygame.MOUSEBUTTONUP:
+                    if hasattr(self,'in_focus'):
+                        if self.Sudoku_cur.grid[self.in_focus[0]][self.in_focus[1]] == 0 or self.highlighted[self.in_focus[0]][self.in_focus[1]] != 0:
+                            event.key = self.filter_numpad(event.key)
+                            if 48 < event.key < 58:
+                                self.highlighted[self.in_focus[0]][self.in_focus[1]] = 3
+                                self.Sudoku_cur.set_value(self.in_focus[0],self.in_focus[1],int(chr(event.key)))
+                                self.render_again()
+                if event.type == pygame.MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
-                    for index,row in enumerate(self.rects):
-                        for iindex,rect in enumerate(row):
-                            if rect.collidepoint(pos):
-                                # rect.left += self.x_calibration
-                                # rect.top += self.y_calibration
-                                new_h = []
-                                for h in self.highlighted:
-                                    new_h.append([0 if x==1 else x for x in iter(h)])
-                                new_h[index][iindex] = 1
-                                self.highlighted = new_h
-                                self.show_background()
-                                self.show_grid()
+                    index,iindex = self.get_index_from_rect_or_pos(pos)
+                    self.in_focus = (index,iindex)
+                    self.pressed = True
+                    self.render_again()
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self.pressed = False
+                    pos = pygame.mouse.get_pos()
+                    index,iindex = self.get_index_from_rect_or_pos(pos)
+                    self.in_focus = (index,iindex)
+                    self.render_again() 
+
+    def filter_numpad(self,key):#filter and return ascii value of 0-9 if numpad was used
+        if 1073741912 < key < 1073741922:
+            key -= 1073741912
+            key += 48
+        print(key)
+        return key
+    def render_again(self):
+        self.show_background()
+        self.show_grid()
+
+    def get_index_from_rect_or_pos(self,pos):
+        for index,row in enumerate(self.rects):
+            for iindex,rect in enumerate(row):
+                if rect.collidepoint(pos):
+                    return index,iindex
 
     def render_number(self,cur_rect,row,column):
         # new_rect = cur_rect.move((rect_size),(rect_size))
@@ -69,15 +86,16 @@ class window:
         self.window.blit(sud_value,new_rect)
         # pygame.display.flip()
 
-    def render_number2(self):
-        # new_rect = cur_rect.move((rect_size),(rect_size))     #this was only used to see the rectangle and adjust the x and y calibration with the font
-        new_rect = self.cur_rect
-        new_rect.left += self.x_calibration
-        new_rect.top -= self.y_calibration
-        sud_value = self.myfont.render("2",True,(0,0,0))
-        
-        self.window.blit(sud_value,new_rect)
-        pygame.display.flip()
+
+    def get_color(self,row,column):
+        if hasattr(self,'in_focus'):
+            if self.pressed:
+                pass
+            if (row,column) == self.in_focus:
+                if self.pressed:
+                    return window.colors[2]
+                return window.colors[1]
+        return window.colors[self.highlighted[row][column]]
 
     def show_background(self):
         self.window.fill((79, 179, 105))
@@ -86,7 +104,6 @@ class window:
         #this method renders in columns so its slightly disharminous because all 2dim list are rows first
         
         rect_size = 50
-        self.rect_size = rect_size # delete later
         x_offset = int(0.5*(st.width - 9*rect_size))
         y_offset = int(0.5*(st.height - 9*rect_size))
         winx = self.window
@@ -97,14 +114,12 @@ class window:
                 cur_rect = pygame.Rect(x+x_offset,y+y_offset,rect_size,rect_size)
                 pygame.draw.rect(winx,(0,0,0),cur_rect,1)
                 inflated_rect = cur_rect.inflate(-2,-2)
-                pygame.draw.rect(winx,window.color_highlights[self.highlighted[iindex][index]],inflated_rect)
+                color = self.get_color(iindex,index)
+                pygame.draw.rect(winx,color,inflated_rect)
                 parse_column.append(cur_rect)
                 self.render_number(cur_rect,iindex,index)
             parse_rects.append(parse_column)
         self.rects = list(map(list,zip(*parse_rects)))      #this transpose the array so first dimension are now rows
-        # print(parse_rects,'\n',self.rects,type(self.rects),type(self.rects[0][0]))
-        # pygame.draw.rect(winx,(0,255,255),self.rects[0][5]) 
-        self.cur_rect = cur_rect # delete later       
 
         for x in range(2):
             pygame.draw.line(winx,(0,0,0),(x_offset+3*rect_size*(x+1),y_offset),(x_offset+3*rect_size*(x+1),y_offset+9*rect_size),4)
