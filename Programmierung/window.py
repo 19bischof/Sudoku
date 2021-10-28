@@ -2,13 +2,12 @@ import numpy
 import pygame
 import random
 
-from pygame.constants import K_1, K_2, K_3, K_5, K_6, K_7, K_8, K_9
 from settings import settings as st
 import json
 from Sudoku import Sudoku
 class window:
 
-    colors = [(255,255,255),(244, 40, 40),(145, 42, 42),(145, 156, 154)]
+    colors = [(255,255,255),(244, 40, 40),(145, 42, 42),(145, 156, 154),(233,239,59)]
 
     def __init__(self):
         self.running = True
@@ -16,6 +15,7 @@ class window:
         self.x_calibration = 14
         self.y_calibration = -3
         self.font_height = 45
+        self.pressed = False
         self.rects = []
         self.highlighted = [[0 for x in range(9)] for x in range(9)]
         pygame.init()
@@ -32,6 +32,7 @@ class window:
     def event_loop(self):
 
         while self.running:
+            pygame.time.Clock().tick(60)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -40,28 +41,42 @@ class window:
                     if hasattr(self,'in_focus'):
                         if self.Sudoku_cur.grid[self.in_focus[0]][self.in_focus[1]] == 0 or self.highlighted[self.in_focus[0]][self.in_focus[1]] != 0:
                             event.key = self.filter_numpad(event.key)
-                            if 48 < event.key < 58:
+                            if 47 < event.key < 58:
                                 self.highlighted[self.in_focus[0]][self.in_focus[1]] = 3
-                                self.Sudoku_cur.set_value(self.in_focus[0],self.in_focus[1],int(chr(event.key)))
+                                res = self.Sudoku_cur.set_value(self.in_focus[0],self.in_focus[1],int(chr(event.key)))
+                                if res  == "bad":
+                                    self.highlighted[self.in_focus[0]][self.in_focus[1]] = 4
+                                if res == "reset":
+                                    self.highlighted[self.in_focus[0]][self.in_focus[1]] = 0
                                 self.render_again()
+
+                if event.type == pygame.MOUSEMOTION:
+                    if self.pressed:
+                        pos = pygame.mouse.get_pos()
+                        if pos != None:
+                            index,iindex = self.get_index_from_rect_or_pos(pos)
+                            self.in_focus = (index,iindex)
+                            self.render_again()
+
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
-                    index,iindex = self.get_index_from_rect_or_pos(pos)
-                    self.in_focus = (index,iindex)
-                    self.pressed = True
-                    self.render_again()
+                    if pos != None:
+                        index,iindex = self.get_index_from_rect_or_pos(pos)
+                        self.in_focus = (index,iindex)
+                        self.pressed = True
+                        self.render_again()
                 if event.type == pygame.MOUSEBUTTONUP:
                     self.pressed = False
                     pos = pygame.mouse.get_pos()
-                    index,iindex = self.get_index_from_rect_or_pos(pos)
-                    self.in_focus = (index,iindex)
-                    self.render_again() 
+                    if pos != None:
+                        index,iindex = self.get_index_from_rect_or_pos(pos)
+                        self.in_focus = (index,iindex)
+                        self.render_again() 
 
     def filter_numpad(self,key):#filter and return ascii value of 0-9 if numpad was used
         if 1073741912 < key < 1073741922:
             key -= 1073741912
             key += 48
-        print(key)
         return key
     def render_again(self):
         self.show_background()
@@ -72,6 +87,7 @@ class window:
             for iindex,rect in enumerate(row):
                 if rect.collidepoint(pos):
                     return index,iindex
+        return -1,-1
 
     def render_number(self,cur_rect,row,column):
         # new_rect = cur_rect.move((rect_size),(rect_size))
