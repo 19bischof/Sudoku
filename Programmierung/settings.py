@@ -1,5 +1,5 @@
 
 class settings:
-    crude_checking = False
+    crude_checking = True
     width = 1080
     height = 720
