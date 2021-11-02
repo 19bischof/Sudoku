@@ -1,14 +1,22 @@
 import json
 from settings import settings as st
+import database
 
 class Sudoku:
-    def __init__(self):
-        self.load_grid()
+    def __init__(self,hash = None):
+        # self.load_grid()
+        self.load_grid_from_db()        #switch these for db or json
+        self.hash = hash
 
     def load_grid(self):
-        with open('editable_Sudokus.json','r') as the_json:
+        with open('editable_Sudokus.json','r') as the_json: #this doesnt work anymore because syntax in json
+            #was changed
             raw_grid = json.load(the_json)
             self.grid = raw_grid['board']
+    
+    def load_grid_from_db(self,hash = None):
+        raw_grid,self.hash = database.get_raw_Sudoku(hash)
+        self.grid = raw_grid['board']
 
     def set_value(self,i,ii,value):
         if value == 0:
