@@ -374,11 +374,10 @@ def update_edited_Sudoku(session_id,grid):
 # the_grid = json.loads(get_edited_Sudoku(s_id,hash))
 # update_edited_Sudoku(s_id,the_grid)
 
-show_tables()
+# show_tables()
 
 
 
 # template_json_file()
-
 
 

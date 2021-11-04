@@ -6,14 +6,14 @@ import json
 from Sudoku import Sudoku
 class window:
 
-    colors = [(255,255,255),(244, 40, 40),(145, 42, 42),(145, 156, 154),(233,239,59)]
+    colors = [(255,255,255),(244, 40, 40),(145, 42, 42),(145, 156, 154),(233,239,59)]   #white, bright_red, dark_red, grey, yellow
 
     def __init__(self):
         self.running = True
         self.Sudoku_cur = Sudoku()
         if len(self.Sudoku_cur.error) != 0:
             print(self.Sudoku_cur.error)
-            self.running = False
+            quit()
         self.x_calibration = 14
         self.y_calibration = -3
         self.font_height = 45
@@ -23,11 +23,11 @@ class window:
         pygame.init()
         pygame.font.init()
         pygame.display.set_caption('Sudoku')
-        
         self.myfont = pygame.font.SysFont('Arial',self.font_height)
-        self.window = pygame.display.set_mode((st.width,st.height))
-        # self.show_background()
-        # self.show_grid()
+        self.window = pygame.display.set_mode((st.width,st.height),flags=pygame.SHOWN)
+        pygame.display.flip()
+        self.show_background()
+        self.show_grid()
 
     
 

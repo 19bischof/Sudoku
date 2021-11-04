@@ -3,17 +3,18 @@ from settings import settings as st
 import database
 import msvcrt
 class Sudoku:
+    
     def __init__(self,hash = None):
         self.error = ""
-        self.login()
+        if input("Login?").lower().strip() in ("y","yes"):
+            self.login()
+        else:
+            print("Logging in as Guest")
+            self.session_id = "5033c8b3f8372ddd0937fea202d1be28"
         # self.load_grid()
         self.load_grid_from_db()        #switch these for db or json
         self.hash = hash
-    def load_grid(self):
-        with open('editable_Sudokus.json','r') as the_json: #this doesnt work anymore because syntax in json
-            #was changed
-            raw_grid = json.load(the_json)
-            self.grid = raw_grid['board']
+
     
     def load_grid_from_db(self,hash = None):
         res = database.get_edited_Sudoku(self.session_id,hash)
@@ -26,11 +27,13 @@ class Sudoku:
 
     def set_value(self,i,ii,value):
         if value == 0:
-            self.grid[i][ii]= ""
+            self.grid[i][ii]= 0
             return "reset"
         self.grid[i][ii] = value
         if st.crude_checking:
-            if self.check_if_obviously_wrong((i,ii)):
+            resp = self.check_if_obviously_wrong((i,ii))
+            if resp:
+                print("Help: This number already exists in its",resp)
                 return "bad"
         return None
 
@@ -75,12 +78,12 @@ class Sudoku:
         for i in range(9):  #check row
             if i != pos[1]:
                 if self.grid[pos[0]][i] == the_value:
-                    return True
+                    return "row"
 
         for i in range(9):  #check column
             if i != pos[0]:
                 if self.grid[i][pos[1]] == the_value:
-                    return True
+                    return "column"
         #get quadrant
         x = int(pos[1]/3)
         y = int(pos[0]/3)
@@ -88,5 +91,5 @@ class Sudoku:
             for r in range(y*3,3+y*3):
                 if (r,c) != pos:
                     if self.grid[r][c] == the_value:
-                        return True
+                        return "area"
         return False
