@@ -1,6 +1,7 @@
 import json
 from settings import settings as st
 import database
+import pprint
 
 class Sudoku:
     def __init__(self,hash = None):
@@ -15,7 +16,8 @@ class Sudoku:
             self.grid = raw_grid['board']
     
     def load_grid_from_db(self,hash = None):
-        raw_grid,self.hash = database.get_raw_Sudoku(hash)
+        str_grid,self.hash = database.get_raw_Sudoku(hash)
+        raw_grid = json.loads(str_grid)
         self.grid = raw_grid['board']
 
     def set_value(self,i,ii,value):
