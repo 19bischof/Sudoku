@@ -11,6 +11,9 @@ class window:
     def __init__(self):
         self.running = True
         self.Sudoku_cur = Sudoku()
+        if len(self.Sudoku_cur.error) != 0:
+            print(self.Sudoku_cur.error)
+            self.running = False
         self.x_calibration = 14
         self.y_calibration = -3
         self.font_height = 45
@@ -23,8 +26,8 @@ class window:
         
         self.myfont = pygame.font.SysFont('Arial',self.font_height)
         self.window = pygame.display.set_mode((st.width,st.height))
-        self.show_background()
-        self.show_grid()
+        # self.show_background()
+        # self.show_grid()
 
     
 

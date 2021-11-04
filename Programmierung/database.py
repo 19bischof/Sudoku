@@ -19,7 +19,7 @@ def test_rowid():
     con = open_con()
     cur = con.cursor()
     query = '''
-    select rowid from Users;'''
+    select rowid from Users; ?'''
     cur.execute(query)
     print(prettytable.from_db_cursor(cur))
     con.close()
@@ -169,7 +169,7 @@ def login_user(username,password):
             else:
                 print("Wrong Password!")
                 con.close()
-                return "Wrong Password!"    
+                return None    
     else:
         print("Username doesn't exist")
         con.close()
@@ -186,6 +186,15 @@ def _set_session_id(session_id,username,con):
     con.commit()
     return True
 
+def _valid_session_id(session_id,con):
+    cur = con.cursor()
+    query = '''Select username from Users WHERE session = ? '''
+    cur.execute(query,(session_id,))
+    res = cur.fetchone()
+    if res == None:
+        return False
+    return True
+    
 def _get_rowids_from_session_id(session_id,con):
     cur = con.cursor()
     query = '''SELECT rowid,cur_s_rowid from Users WHERE session = ?;'''
@@ -261,14 +270,14 @@ def _get_hashes(con):
 
 
 
-def _set_cur_s_rowid_with_hash(hash,con):
+def _set_cur_s_rowid_with_hash(hash,session_id,con):
     cur = con.cursor()
     query = '''Select rowid from Sudokus where hash = ?'''
     cur.execute(query,(hash,))
     res = cur.fetchone()
     the_rowid = res[0]
-    query = '''UPDATE Users SET cur_s_rowid = ?;'''
-    cur.execute(query,(the_rowid,))
+    query = '''UPDATE Users SET cur_s_rowid = ? WHERE session = ?;'''
+    cur.execute(query,(the_rowid,session_id))
     res = cur.fetchone()
     print("Database-Response:",res)
     con.commit()
@@ -287,10 +296,12 @@ def _cur_s_rowid_in_cross(session_id,con):
 
 def get_edited_Sudoku(session_id,hash = None):          #the method which is called to get a Sudoku from a User (new or already edited)
     con = open_con()    
+    if not _valid_session_id(session_id,con):
+        return "not valid session_id"
     cur = con.cursor()
     if hash == None:
         hash = _get_hashes(con)
-    _set_cur_s_rowid_with_hash(hash,con)
+    _set_cur_s_rowid_with_hash(hash,session_id,con)
     if not _cur_s_rowid_in_cross(session_id,con):
         _update_edited_Sudoku_with_raw(session_id,con)
     query = '''
@@ -358,7 +369,8 @@ def update_edited_Sudoku(session_id,grid):
 # the_grid = json.loads(get_edited_Sudoku(s_id,hash))
 # update_edited_Sudoku(s_id,the_grid)
 
-# show_tables()
+show_tables()
+
 
 
 

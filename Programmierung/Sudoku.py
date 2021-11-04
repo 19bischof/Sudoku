@@ -1,14 +1,14 @@
 import json
 from settings import settings as st
 import database
-import pprint
-
+import msvcrt
 class Sudoku:
     def __init__(self,hash = None):
+        self.error = ""
+        self.login()
         # self.load_grid()
         self.load_grid_from_db()        #switch these for db or json
         self.hash = hash
-
     def load_grid(self):
         with open('editable_Sudokus.json','r') as the_json: #this doesnt work anymore because syntax in json
             #was changed
@@ -16,7 +16,11 @@ class Sudoku:
             self.grid = raw_grid['board']
     
     def load_grid_from_db(self,hash = None):
-        str_grid,self.hash = database.get_raw_Sudoku(hash)
+        res = database.get_edited_Sudoku(self.session_id,hash)
+        if res == "not valid session_id":
+            self.error += res
+            return
+        str_grid = res
         raw_grid = json.loads(str_grid)
         self.grid = raw_grid['board']
 
@@ -29,6 +33,42 @@ class Sudoku:
             if self.check_if_obviously_wrong((i,ii)):
                 return "bad"
         return None
+
+    def login(self):
+        print("----Login----")
+        user = input("Username: ")
+        print("Password: ",end="",flush=True)
+        passw = ""
+        while 1:
+            char = msvcrt.getch()
+            if char == b'\r':
+                break
+            if char == b'\x03':
+                quit()
+            if char == b'\x08':
+                print("\rPassword: ",end="",flush=True)
+                for l in range(len(passw)):
+                    print(" ",end="",flush="True")
+                print("\rPassword: ",end="",flush=True)
+                for l in range(len(passw)-1):
+                    print("*",end="",flush="True")
+                passw = passw[0:len(passw)-1]
+            else:
+                passw += char.decode('utf-8')
+                print('*',end="",flush=True)
+        print()
+        user = user.strip()
+        passw = passw.strip()
+        self.session_id = database.login_user(user,passw)
+        if self.session_id == "Username doesn't exist":
+            print(self.session_id)
+            self.session_id = None
+            if input("Do you want to register this User?").lower().strip() in ("yes","y"):
+                database.register_new_user(user,passw)
+                self.session_id = database.login_user(user,passw)
+            else:
+                quit()
+
 
     def check_if_obviously_wrong(self,pos):
         the_value = self.grid[pos[0]][pos[1]]
