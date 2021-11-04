@@ -206,22 +206,27 @@ def load_json_Sudoku_to_db(the_hash,_dict,difficulty):
     con = open_con()
     if _Sudoku_table_exists(con):
         cur = con.cursor()
-        query = '''
-        INSERT INTO Sudokus (hash,Sudoku_raw,difficulty) values (?,?,?);
-        '''
-        cur.execute(query,(the_hash,_dict,difficulty))
+        query = '''Select hash from Sudokus where hash = ?'''
+        cur.execute(query,(the_hash,))
         res = cur.fetchone()
-        print("Database-Response: ",res)
-
-        con.commit()
+        if res == None:
+            query = '''
+            INSERT INTO Sudokus (hash,Sudoku_raw,difficulty) values (?,?,?);
+            '''
+            cur.execute(query,(the_hash,_dict,difficulty))
+            res = cur.fetchone()
+            print("Database-Response: ",res)
+            con.commit()
     con.close()
 
 
 def template_json_file():
     with open('editable_Sudokus.json','r') as the_json:
         raw_grid = json.load(the_json)
-        the_hash = list(raw_grid.keys())[0]    # 0 because only one Sudoku in file
-        load_json_Sudoku_to_db(the_hash,json.dumps(raw_grid[the_hash]),"easy")    #easy because uneditable json is pulled solely from easy category
+        keys = list(raw_grid.keys())  
+        for index,the_hash in enumerate(keys):
+            print("Loading",str(index)+".")
+            load_json_Sudoku_to_db(the_hash,json.dumps(raw_grid[the_hash]),"easy")    #easy because uneditable json is pulled solely from easy category
 
 def show_tables():
     con = open_con()
@@ -373,7 +378,7 @@ show_tables()
 
 
 
-
+# template_json_file()
 
 
 
