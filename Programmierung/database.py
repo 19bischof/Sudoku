@@ -4,6 +4,8 @@ import json
 import random
 import pbkdf2_impl
 import os
+import names
+from pprint import pprint
 
 def open_con():
     try:
@@ -15,13 +17,15 @@ def open_con():
 
 
 
-def test_rowid():
+def random_queries():
     con = open_con()
     cur = con.cursor()
     query = '''
-    select rowid from Users; ?'''
+    ALTER TABLE Sudokus ADD COLUMN IF NOT EXISTS codename text;'''
     cur.execute(query)
-    print(prettytable.from_db_cursor(cur))
+    # print(prettytable.from_db_cursor(cur))
+    print(cur.fetchone())
+    con.commit()
     con.close()
 
 def _username_exists(username,con):
@@ -228,6 +232,20 @@ def template_json_file():
             print("Loading",str(index)+".")
             load_json_Sudoku_to_db(the_hash,json.dumps(raw_grid[the_hash]),"easy")    #easy because uneditable json is pulled solely from easy category
 
+def load_codenames_to_Sudokus():
+    con = open_con()
+    cur = con.cursor()
+    lot = []            #generate list of tuples with each tuple: (name,rowid)
+    for index,n in enumerate(names.j_names):
+        lot.append((n,index+1))
+    # pprint(lot)
+    query = '''UPDATE Sudokus SET codename = ? WHERE rowid = ?;'''
+    cur.executemany(query,lot)
+    print(cur.fetchone())
+
+    con.commit()
+    con.close()
+    
 def show_tables():
     con = open_con()
     cur = con.cursor()
@@ -238,7 +256,7 @@ def show_tables():
     print(prettytable.from_db_cursor(cur))
     if _Sudoku_table_exists(con):
         query = '''
-        SELECT rowid,hash,difficulty FROM Sudokus;
+        SELECT rowid,hash,difficulty,codename FROM Sudokus;
         '''
         cur.execute(query)
         print("Table Sudokus:")
@@ -374,10 +392,11 @@ def update_edited_Sudoku(session_id,grid):
 # the_grid = json.loads(get_edited_Sudoku(s_id,hash))
 # update_edited_Sudoku(s_id,the_grid)
 
-# show_tables()
+show_tables()
 
 
-
+# load_codenames_to_Sudokus()
 # template_json_file()
 
 
+# random_queries()
