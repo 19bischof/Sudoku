@@ -316,7 +316,16 @@ def _cur_s_rowid_in_cross(session_id,con):
     if res == None:
         return False
     return True
-
+def get_codenames_and_userdata(session_id):
+    con = open_con()
+    if not _valid_session_id(session_id,con):
+        return "not valid session_id"
+    cur = con.cursor()
+    query = '''SELECT codename FROM Sudokus;'''
+    cur.execute(query)
+    lot = cur.fetchall()
+    lon = [t[0] for t in lot]
+    return lon
 def get_edited_Sudoku(session_id,hash = None):          #the method which is called to get a Sudoku from a User (new or already edited)
     con = open_con()    
     if not _valid_session_id(session_id,con):
@@ -392,10 +401,14 @@ def update_edited_Sudoku(session_id,grid):
 # the_grid = json.loads(get_edited_Sudoku(s_id,hash))
 # update_edited_Sudoku(s_id,the_grid)
 
-show_tables()
+# show_tables()
 
+
+# s_id = login_user("gerald","welcome to hogwarts")
+# get_codenames_and_userdata(s_id)
 
 # load_codenames_to_Sudokus()
+
 # template_json_file()
 
 

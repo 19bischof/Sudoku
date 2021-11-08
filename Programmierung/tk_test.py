@@ -3,8 +3,10 @@ from pprint import pprint
 from lorem.text import TextLorem
 import names
 import tkinter
+import database
 
 wind = tkinter.Tk()
+# database.get_codenames_and_userdata()
 left = Listbox(wind,font="Calibri 20",listvariable=StringVar(value = names.j_names))
 right = Listbox(wind,font="Calibri 20",listvariable=StringVar(value = [TextLorem(srange=(5,9))._word() for x in range(100)]))
 scroll = Scrollbar(wind)
@@ -24,6 +26,9 @@ def left_right(*args):
 
 def right_select(*args):
     i = right.curselection()
+    if i == ():
+        return
+    i = i[0]
     print(i)
     right.selection_clear(0,tkinter.END)
     left.activate(i)

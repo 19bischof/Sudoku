@@ -1,8 +1,6 @@
 import pygame
-import random
 
 from settings import settings as st
-import json
 from Sudoku import Sudoku
 class window:
 
