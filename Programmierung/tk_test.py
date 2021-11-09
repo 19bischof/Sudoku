@@ -1,14 +1,14 @@
 from tkinter import *
 from pprint import pprint
-from lorem.text import TextLorem
 import names
 import tkinter
 import database
-
+# from controller import s_id
+s_id = "5033c8b3f8372ddd0937fea202d1be28"
 wind = tkinter.Tk()
-# database.get_codenames_and_userdata()
+lon = database.get_codenames_and_userdata(s_id)
 left = Listbox(wind,font="Calibri 20",listvariable=StringVar(value = names.j_names))
-right = Listbox(wind,font="Calibri 20",listvariable=StringVar(value = [TextLorem(srange=(5,9))._word() for x in range(100)]))
+right = Listbox(wind,font="Calibri 20",listvariable=StringVar(value = lon))
 scroll = Scrollbar(wind)
 
 

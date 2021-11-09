@@ -81,7 +81,7 @@ def drop_users():
         query ='''Drop Table Users;'''
         cur.execute(query)
         res = cur.fetchone()
-        print("Database-Response: ",res)
+        print("Database-response:",res)
         con.commit()
     con.close()
 
@@ -92,7 +92,7 @@ def drop_cross():
         query ='''Drop Table Cross_Sudokus_Users;'''
         cur.execute(query)
         res = cur.fetchone()
-        print("Database-Response: ",res)
+        print("Database-response:",res)
         con.commit()
     con.close()
 
@@ -106,7 +106,7 @@ def create_table_Sudokus():
     '''
     cur.execute(query)
     res = cur.fetchone()
-    print("Database-Response: ",res)
+    print("Database-response:",res)
 
     con.commit()
     con.close()
@@ -116,11 +116,11 @@ def create_table_cross():
     cur = con.cursor() 
     query = '''
     CREATE TABLE IF NOT EXISTS Cross_Sudokus_Users(
-    u_rowid int,s_rowid int,Sudoku_edited json);
+    u_rowid int,s_rowid int,seconds_played int,Sudoku_edited json);
     '''
     cur.execute(query)
     res = cur.fetchone()
-    print("Database-Response: ",res)
+    print("Database-response:",res)
 
     con.commit()
     con.close()
@@ -133,7 +133,7 @@ def create_table_user():
     '''
     cur.execute(query)
     res = cur.fetchone()
-    print("Database-Response: ",res)
+    print("Database-response:",res)
     con.commit()
     con.close()
 
@@ -150,7 +150,7 @@ def register_new_user(username,password):
     result = pbkdf2_impl.hash_of_passw(password)
     cur.execute(query,(username,result['hash'],result['salt']))
     res = cur.fetchone()
-    print("Database-Response: ",res)
+    print("Database-response:",res)
     con.commit()
     con.close()
 
@@ -186,7 +186,7 @@ def _set_session_id(session_id,username,con):
     query = '''UPDATE Users Set session = ? where username = ?'''
     cur.execute(query,(session_id,username))
     res = cur.fetchone()
-    print("Database-Response: ",res)
+    print("Database-response:",res)
     con.commit()
     return True
 
@@ -219,7 +219,7 @@ def load_json_Sudoku_to_db(the_hash,_dict,difficulty):
             '''
             cur.execute(query,(the_hash,_dict,difficulty))
             res = cur.fetchone()
-            print("Database-Response: ",res)
+            print("Database-response:",res)
             con.commit()
     con.close()
 
@@ -302,7 +302,7 @@ def _set_cur_s_rowid_with_hash(hash,session_id,con):
     query = '''UPDATE Users SET cur_s_rowid = ? WHERE session = ?;'''
     cur.execute(query,(the_rowid,session_id))
     res = cur.fetchone()
-    print("Database-Response:",res)
+    print("Database-response:",res)
     con.commit()
 
 def _cur_s_rowid_in_cross(session_id,con):
@@ -325,6 +325,7 @@ def get_codenames_and_userdata(session_id):
     cur.execute(query)
     lot = cur.fetchall()
     lon = [t[0] for t in lot]
+    query = '''SELECT '''
     return lon
 def get_edited_Sudoku(session_id,hash = None):          #the method which is called to get a Sudoku from a User (new or already edited)
     con = open_con()    
@@ -361,20 +362,21 @@ def _update_edited_Sudoku_with_raw(session_id,con):
     VALUES (?,?,?);'''
     cur.execute(query,(u_rowid,s_rowid,grid))
     res = cur.fetchone()
-    print("Database-Response:",res)
+    print("Database-response:",res)
     con.commit()
 
-def update_edited_Sudoku(session_id,grid):
+def update_edited_Sudoku(session_id,grid,seconds):
     con = open_con()
     cur = con.cursor()
     u_rowid,s_rowid = _get_rowids_from_session_id(session_id,con)
     if not _cur_s_rowid_in_cross(session_id,con):
         _update_edited_Sudoku_with_raw(session_id,con)
     
-    query = '''Update Cross_Sudokus_Users set Sudoku_edited = ? where u_rowid = ? and s_rowid = ?;'''
-    cur.execute(query,(json.dumps(grid),u_rowid,s_rowid))
+    query = '''Update Cross_Sudokus_Users set Sudoku_edited = ?,seconds_played = ?
+     where u_rowid = ? and s_rowid = ?;'''
+    cur.execute(query,(json.dumps(grid),seconds,u_rowid,s_rowid))
     res = cur.fetchone()
-    print("Database-Response:",res)
+    print("Database-response:",res)
     con.commit()
     con.close()
 
@@ -388,7 +390,7 @@ def update_edited_Sudoku(session_id,grid):
 # show_tables(con)
 
 # create_table_user()
-# create_table_cross()
+create_table_cross()
 # test_rowid()
 # register_new_user("gerald","welcome to hogwarts")
 # drop_users()
@@ -401,7 +403,7 @@ def update_edited_Sudoku(session_id,grid):
 # the_grid = json.loads(get_edited_Sudoku(s_id,hash))
 # update_edited_Sudoku(s_id,the_grid)
 
-# show_tables()
+show_tables()
 
 
 # s_id = login_user("gerald","welcome to hogwarts")

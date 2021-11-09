@@ -4,26 +4,32 @@ import database
 import msvcrt
 class Sudoku:
     
-    def __init__(self,hash = None):
+    def __init__(self,s_id,hash = None):
         self.error = ""
-        if input("Login?").lower().strip() in ("y","yes"):
-            self.login()
+        self.seconds = ""
+        if s_id == "":
+            if input("Login?").lower().strip() in ("y","yes"):
+                self.login()
+            else:
+                print("Logging in as Guest")
+                self.session_id = "5033c8b3f8372ddd0937fea202d1be28"
         else:
-            print("Logging in as Guest")
-            self.session_id = "5033c8b3f8372ddd0937fea202d1be28"
-        # self.load_grid()
+            self.session_id = s_id
         self.load_grid_from_db()        #switch these for db or json
         self.hash = hash
 
     
     def load_grid_from_db(self,hash = None):
-        res = database.get_edited_Sudoku(self.session_id,hash)
+        res,seconds = database.get_edited_Sudoku(self.session_id,hash)
+        self.seconds = seconds
         if res == "not valid session_id":
             self.error += res
             return
         str_grid = res
         raw_grid = json.loads(str_grid)
         self.grid = raw_grid['board']
+
+    def update_db_with_data(self):
 
     def set_value(self,i,ii,value):
         if value == 0:
@@ -47,7 +53,8 @@ class Sudoku:
             if char == b'\r':
                 break
             if char == b'\x03':
-                quit()
+                print("Logging in as Guest")
+                self.session_id = "5033c8b3f8372ddd0937fea202d1be28"
             if char == b'\x08':
                 print("\rPassword: ",end="",flush=True)
                 for l in range(len(passw)):
@@ -70,7 +77,7 @@ class Sudoku:
                 database.register_new_user(user,passw)
                 self.session_id = database.login_user(user,passw)
             else:
-                quit()
+                self.login()
 
 
     def check_if_obviously_wrong(self,pos):

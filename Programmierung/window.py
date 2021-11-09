@@ -6,9 +6,9 @@ class window:
 
     colors = [(255,255,255),(244, 40, 40),(145, 42, 42),(145, 156, 154),(233,239,59)]   #white, bright_red, dark_red, grey, yellow
 
-    def __init__(self):
+    def __init__(self,s_id):
         self.running = True
-        self.Sudoku_cur = Sudoku()
+        self.Sudoku_cur = Sudoku(s_id)
         if len(self.Sudoku_cur.error) != 0:
             print(self.Sudoku_cur.error)
             quit()
@@ -35,6 +35,7 @@ class window:
             pygame.time.Clock().tick(60)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.Sudoku_cur().
                     self.running = False
 
                 if event.type == pygame.KEYDOWN:
