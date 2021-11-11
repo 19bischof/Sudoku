@@ -2,11 +2,12 @@ import json
 from settings import settings as st
 import database
 import msvcrt
+import time
 class Sudoku:
     
     def __init__(self,s_id,hash = None):
         self.error = ""
-        self.seconds = ""
+        self.seconds = 0
         if s_id == "":
             if input("Login?").lower().strip() in ("y","yes"):
                 self.login()
@@ -15,13 +16,16 @@ class Sudoku:
                 self.session_id = "5033c8b3f8372ddd0937fea202d1be28"
         else:
             self.session_id = s_id
-        self.load_grid_from_db()        #switch these for db or json
+        self.load_grid_from_db()    
+        self.username = database.get_user_from_session_id(self.session_id)
         self.hash = hash
 
     
     def load_grid_from_db(self,hash = None):
         res,seconds = database.get_edited_Sudoku(self.session_id,hash)
-        self.seconds = seconds
+        if seconds != None:
+            self.seconds = seconds
+        self.time_sud = time.time()
         if res == "not valid session_id":
             self.error += res
             return
@@ -30,7 +34,9 @@ class Sudoku:
         self.grid = raw_grid['board']
 
     def update_db_with_data(self):
-
+        seconds_on_sud = self.seconds + int(time.time() - self.time_sud)
+        print(seconds_on_sud," seconds!")
+        database.update_edited_Sudoku(self.session_id,self.grid,seconds_on_sud)
     def set_value(self,i,ii,value):
         if value == 0:
             self.grid[i][ii]= 0

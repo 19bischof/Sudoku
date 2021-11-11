@@ -156,6 +156,8 @@ def register_new_user(username,password):
 
 def login_user(username,password):
     con = open_con()
+    username = username.strip()
+    password = password.strip()
     if _username_exists(username,con):
         cur = con.cursor()
         query = '''Select password,salt from Users where username = ?'''
@@ -198,7 +200,16 @@ def _valid_session_id(session_id,con):
     if res == None:
         return False
     return True
-    
+
+def get_user_from_session_id(session_id):
+    con = open_con()
+    cur = con.cursor()
+    query = '''Select username from Users Where session = ?;'''
+    cur.execute(query,(session_id,))
+    res = cur.fetchone()
+    con.close()
+    return res[0]
+
 def _get_rowids_from_session_id(session_id,con):
     cur = con.cursor()
     query = '''SELECT rowid,cur_s_rowid from Users WHERE session = ?;'''
@@ -271,7 +282,7 @@ def show_tables():
         print(prettytable.from_db_cursor(cur))
     if _Cross_table_exists(con):
         query = '''
-        SELECT rowid,u_rowid,s_rowid FROM Cross_Sudokus_Users;
+        SELECT rowid,u_rowid,seconds_played,s_rowid FROM Cross_Sudokus_Users;
         '''
         cur.execute(query)
         print("Table Cross:")
@@ -321,12 +332,22 @@ def get_codenames_and_userdata(session_id):
     if not _valid_session_id(session_id,con):
         return "not valid session_id"
     cur = con.cursor()
-    query = '''SELECT codename FROM Sudokus;'''
-    cur.execute(query)
-    lot = cur.fetchall()
-    lon = [t[0] for t in lot]
-    query = '''SELECT '''
-    return lon
+    query = '''SELECT Sudokus.codename,seconds_played 
+    FROM Users,Sudokus
+    LEFT JOIN Cross_Sudokus_Users
+    
+    WHERE Users.rowid = u_rowid
+    and Users.session = ?;
+    '''
+    # INNER JOIN Users
+    # on cross.u_rowid = Users.rowid
+    # WHERE Users.session = ?;
+    cur.execute(query,(session_id,))
+    lot = cur.fetchall()                            #list of tuples
+    # lon = [t[0] for t in lot]
+    pprint(lot)
+    return lot
+
 def get_edited_Sudoku(session_id,hash = None):          #the method which is called to get a Sudoku from a User (new or already edited)
     con = open_con()    
     if not _valid_session_id(session_id,con):
@@ -338,7 +359,7 @@ def get_edited_Sudoku(session_id,hash = None):          #the method which is cal
     if not _cur_s_rowid_in_cross(session_id,con):
         _update_edited_Sudoku_with_raw(session_id,con)
     query = '''
-    SELECT Sudoku_edited FROM Cross_Sudokus_Users,Users WHERE 
+    SELECT Sudoku_edited,seconds_played FROM Cross_Sudokus_Users,Users WHERE 
     Users.cur_s_rowid = Cross_Sudokus_Users.s_rowid
     and Users.rowid = Cross_Sudokus_Users.u_rowid
     and Users.session = ?;
@@ -346,9 +367,8 @@ def get_edited_Sudoku(session_id,hash = None):          #the method which is cal
     cur.execute(query,(session_id,))
     
     res = cur.fetchone()
-    new_s = res[0]
     con.close()
-    return new_s
+    return res
 
 def _update_edited_Sudoku_with_raw(session_id,con):
     cur = con.cursor()
@@ -358,8 +378,8 @@ def _update_edited_Sudoku_with_raw(session_id,con):
     res = cur.fetchone()
     grid = res[0]
 
-    query = '''Insert into Cross_Sudokus_Users (u_rowid,s_rowid,Sudoku_edited)
-    VALUES (?,?,?);'''
+    query = '''Insert into Cross_Sudokus_Users (u_rowid,s_rowid,Sudoku_edited,seconds_played)
+    VALUES (?,?,?,0);'''
     cur.execute(query,(u_rowid,s_rowid,grid))
     res = cur.fetchone()
     print("Database-response:",res)
@@ -390,7 +410,7 @@ def update_edited_Sudoku(session_id,grid,seconds):
 # show_tables(con)
 
 # create_table_user()
-create_table_cross()
+# create_table_cross()
 # test_rowid()
 # register_new_user("gerald","welcome to hogwarts")
 # drop_users()
@@ -403,11 +423,12 @@ create_table_cross()
 # the_grid = json.loads(get_edited_Sudoku(s_id,hash))
 # update_edited_Sudoku(s_id,the_grid)
 
-show_tables()
+# show_tables()
 
 
 # s_id = login_user("gerald","welcome to hogwarts")
-# get_codenames_and_userdata(s_id)
+s_id = "5033c8b3f8372ddd0937fea202d1be28"
+get_codenames_and_userdata(s_id)
 
 # load_codenames_to_Sudokus()
 

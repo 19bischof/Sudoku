@@ -6,9 +6,11 @@ import database
 # from controller import s_id
 s_id = "5033c8b3f8372ddd0937fea202d1be28"
 wind = tkinter.Tk()
-lon = database.get_codenames_and_userdata(s_id)
-left = Listbox(wind,font="Calibri 20",listvariable=StringVar(value = names.j_names))
-right = Listbox(wind,font="Calibri 20",listvariable=StringVar(value = lon))
+lot = database.get_codenames_and_userdata(s_id)
+lon = [x[0] for x in lot]                   #list of names
+los = [x[1] for x in lot]                   #list of seconds
+left = Listbox(wind,font="Calibri 20",listvariable=StringVar(value = lon))
+right = Listbox(wind,font="Calibri 20",listvariable=StringVar(value = los))
 scroll = Scrollbar(wind)
 
 

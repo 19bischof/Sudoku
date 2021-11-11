@@ -19,7 +19,7 @@ def close():
     winx.quit()
 def try_login():
     global s_id
-    s_id = database.login_user(entry_1_var.get(),entry_2_var.get())
+    s_id = database.login_user(entry_1_var.get().strip(),entry_2_var.get().strip())
     if s_id == "Username doesn't exist":
         result_label.configure(text="User and Password do not exist")
         result_label.grid(row=7)
@@ -54,9 +54,10 @@ def register_user():
 
 winx = tkinter.Tk()
 winx.winfo_toplevel().title("login")
+winx.eval('tk::PlaceWindow . center')
 winx.geometry("200x200")
 winx.configure(background=general_bg,)
-
+winx.bind("<Return>",lambda t: try_login())
 
 
 label_entry_1 = tkinter.Label(winx,text="Username:",background=general_bg)
