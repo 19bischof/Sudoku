@@ -5,13 +5,14 @@ from Sudoku import Sudoku
 
 
 class window:
+    colors = {"white":(255,255,255),"bright_red":(244,40,40),"dark_red":(145,42,42),"grey":(145,156,154),
+    "yellow":(233,239,59),"bright_green":(79,179,105),"dark_blue":(0,0,102),"black":(0,0,0)}
+    # colors = [(255, 255, 255), (244, 40, 40), (145, 42, 42), (145, 156, 154),
+    #           (233, 239, 59),(79, 179, 105),(0,0,102)]  # white, bright_red, dark_red, grey, yellow,bright_green,dark_blue
 
-    colors = [(255, 255, 255), (244, 40, 40), (145, 42, 42), (145, 156, 154),
-              (233, 239, 59),(79, 179, 105),(0,0,102)]  # white, bright_red, dark_red, grey, yellow,bright_green,dark_blue
-
-    def __init__(self, s_id):
+    def __init__(self, s_id,hash):
         self.running = True
-        self.Sudoku_cur = Sudoku(s_id)
+        self.Sudoku_cur = Sudoku(s_id,hash=hash)
 
         if len(self.Sudoku_cur.error) != 0:
             print(self.Sudoku_cur.error)
@@ -21,7 +22,7 @@ class window:
         self.font_height = 45
         self.pressed = False
         self.rects = []
-        self.highlighted = [[0 for x in range(9)] for x in range(9)]
+        self.highlighted = self.Sudoku_cur.changes        #0=normal,1=selected,2=mousedown,3=changed_value,4=changed_and_bad_value
         pygame.init()
         pygame.font.init()
         pygame.display.set_caption('Sudoku - '+self.Sudoku_cur.username)
@@ -116,18 +117,19 @@ class window:
         # pygame.display.flip()
 
     def get_color(self, row, column):
+        c_map = ['white','bright_red','dark_red','grey','yellow']
         if hasattr(self, 'in_focus'):
             if self.pressed:
                 pass
             if (row, column) == self.in_focus:
                 if self.pressed:
-                    return window.colors[2]
-                return window.colors[1]
-        return window.colors[self.highlighted[row][column]]
+                    return window.colors['dark_red']
+                return window.colors['bright_red']
+        return window.colors[c_map[self.highlighted[row][column]]]
 
     def show_background(self):
-        self.window.fill(window.colors[5])
-        self.window.blit(self.text_font.render(self.Sudoku_cur.username,True,window.colors[6]),(0,0))
+        self.window.fill(window.colors['bright_green'])
+        self.window.blit(self.text_font.render(self.Sudoku_cur.username+" - "+self.Sudoku_cur.codename,True,window.colors['dark_blue']),(0,0))
 
     def show_grid(self):
         # this method renders in columns so its slightly disharminous because all 2dim list are rows first

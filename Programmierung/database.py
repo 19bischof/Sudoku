@@ -125,7 +125,7 @@ def create_table_cross():
     con.commit()
     con.close()
 
-def create_table_user():
+def create_table_users():
     con = open_con()
     cur = con.cursor()
     query = '''
@@ -200,15 +200,6 @@ def _valid_session_id(session_id,con):
     if res == None:
         return False
     return True
-
-def get_user_from_session_id(session_id):
-    con = open_con()
-    cur = con.cursor()
-    query = '''Select username from Users Where session = ?;'''
-    cur.execute(query,(session_id,))
-    res = cur.fetchone()
-    con.close()
-    return res[0]
 
 def _get_rowids_from_session_id(session_id,con):
     cur = con.cursor()
@@ -327,28 +318,37 @@ def _cur_s_rowid_in_cross(session_id,con):
     if res == None:
         return False
     return True
-def get_codenames_and_userdata(session_id):
+
+def get_user_and_sud_name_from_session_id(session_id):
+    con = open_con()
+    cur = con.cursor()
+    query = '''Select username,codename from Users,Sudokus
+    WHERE session = ? 
+    AND Sudokus.rowid = Users.cur_s_rowid;'''
+    cur.execute(query,(session_id,))
+    res = cur.fetchone()
+    con.close()
+    return res
+    
+def get_codenames_and_hashes_and_userdata(session_id):
     con = open_con()
     if not _valid_session_id(session_id,con):
         return "not valid session_id"
     cur = con.cursor()
-    query = '''SELECT Sudokus.codename,seconds_played 
-    FROM Users,Sudokus
-    LEFT JOIN Cross_Sudokus_Users
-    
-    WHERE Users.rowid = u_rowid
-    and Users.session = ?;
+    query = '''
+    SELECT Sudokus.codename,Sudokus.hash,cross.seconds_played
+    FROM Sudokus
+    LEFT JOIN Cross_Sudokus_Users AS cross
+    ON Sudokus.rowid = cross.s_rowid
+    LEFT JOIN Users
+    ON session = ?
+    ORDER BY cross.seconds_played DESC;
     '''
-    # INNER JOIN Users
-    # on cross.u_rowid = Users.rowid
-    # WHERE Users.session = ?;
     cur.execute(query,(session_id,))
     lot = cur.fetchall()                            #list of tuples
-    # lon = [t[0] for t in lot]
-    pprint(lot)
     return lot
 
-def get_edited_Sudoku(session_id,hash = None):          #the method which is called to get a Sudoku from a User (new or already edited)
+def get_edited_raw_solved_Sudoku_and_seconds(session_id,hash = None):          #the method which is called to get a Sudoku from a User (new or already edited)
     con = open_con()    
     if not _valid_session_id(session_id,con):
         return "not valid session_id"
@@ -359,11 +359,11 @@ def get_edited_Sudoku(session_id,hash = None):          #the method which is cal
     if not _cur_s_rowid_in_cross(session_id,con):
         _update_edited_Sudoku_with_raw(session_id,con)
     query = '''
-    SELECT Sudoku_edited,seconds_played FROM Cross_Sudokus_Users,Users WHERE 
-    Users.cur_s_rowid = Cross_Sudokus_Users.s_rowid
-    and Users.rowid = Cross_Sudokus_Users.u_rowid
-    and Users.session = ?;
-    '''    
+    SELECT Sudoku_edited,Sudoku_raw,Sudoku_solved,seconds_played FROM Cross_Sudokus_Users as cross,Users,Sudokus 
+    WHERE Users.cur_s_rowid = cross.s_rowid
+    and Users.rowid = cross.u_rowid
+    and Users.session = ?
+    and Sudokus.rowid = cross.s_rowid;'''    
     cur.execute(query,(session_id,))
     
     res = cur.fetchone()
@@ -427,8 +427,8 @@ def update_edited_Sudoku(session_id,grid,seconds):
 
 
 # s_id = login_user("gerald","welcome to hogwarts")
-s_id = "5033c8b3f8372ddd0937fea202d1be28"
-get_codenames_and_userdata(s_id)
+# s_id = "5033c8b3f8372ddd0937fea202d1be28"
+# get_codenames_and_hashes_and_userdata(s_id)
 
 # load_codenames_to_Sudokus()
 
