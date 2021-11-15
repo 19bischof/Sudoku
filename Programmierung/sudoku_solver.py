@@ -1,5 +1,5 @@
 from pprint import pprint
-
+import window
 
 grid = [[8, 0, 0, 0, 0, 7, 0, 0, 2],
         [0, 0, 4, 0, 0, 6, 7, 0, 9],
@@ -164,11 +164,12 @@ def update_cells(): #3 dim array of possible numbers per cell
     reset_cells()
     for r in range(9):
         for c in range(9):
-            for n in nos:
-                if n not in rows[r]:
-                    if n not in columns[c]:
-                        if n not in quadrants[get_quadrant(r,c)]:
-                            cells[r][c].append(n)
+            if grid[r][c] == 0:
+                for n in nos:
+                    if n not in rows[r]:
+                        if n not in columns[c]:
+                            if n not in quadrants[get_quadrant(r,c)]:
+                                cells[r][c].append(n)
     check_if_cells_valid()
 
 def solve_for_one_solution():
@@ -180,6 +181,7 @@ def solve_for_one_solution():
             if len(cells[r][c]) == 1:
                 grid[r][c] = cells[r][c][0]
                 print("solved: row={} column={} number={}".format(r,c,grid[r][c]))
+                # input()
                 progress = True
                 update_stack()
     
@@ -197,14 +199,26 @@ def check_if_finished():
 def loop():
     reset_stack()
     input("ready:")
-    for i in range(20):
+    for i in range(100):
         pprint(grid)
-        print_stack()
         update_stack()
+        print_stack()
         check_if_finished()
         if not solve_for_one_solution():
             pprint(grid)
             break
+    Game_loop()
+#TODO: each row and each column has 3 guarantees (interaction with the quadruples)
+#meaning that even if you don't know to which cell you can know this row has those two
+#numbers in this quad and therefor this row cant have the two numbers as an option
+#anywhere else!
+s_id = "5033c8b3f8372ddd0937fea202d1be28"
+def Game_loop():
+    winx = window.window(s_id,"c850c5be22fa6169")
+    winx.Sudoku_cur.grid = grid
+    winx.show_background()
+    while winx.running:
+        winx.event_loop()
 # update_quadrants()
 # print_quads()
 # update_rows()
