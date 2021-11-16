@@ -7,35 +7,40 @@ import msvcrt
 import signal
 
 
-
 def tk_login():
     s_id = None
     general_bg = '#3495eb'
 
     def close():
-        label_entry_1.grid_remove()
-        label_entry_2.grid_remove()
-        label_entry_3.grid_remove()
-        entry1.grid_remove()
-        entry2.grid_remove()
-        entry3.grid_remove()
-        login_button.grid_remove()
-        winx.update()
-        time.sleep(2)
+        # label_entry_1.grid_remove()
+        # label_entry_2.grid_remove()
+        # label_entry_3.grid_remove()
+        # entry1.grid_remove()
+        # entry2.grid_remove()
+        # entry3.grid_remove()
+        # login_button.grid_remove()
+        result_label.grid_remove()
+        # winx.update()
+        result_label.grid(row=1,sticky="nswe")
+
+        # time.sleep(2)
         winx.destroy()
     def try_login():
-        global s_id
+        nonlocal s_id
         resp = database.login_user(entry_1_var.get().strip(),entry_2_var.get().strip())
         if resp == "Username doesn't exist":
             result_label.configure(text="User and Password do not exist")
             result_label.grid(row=7)
             register_button.grid(row=6)
+        elif resp == "Wrong Password":
+            result_label.grid(row=7)
+            result_label.configure(text=resp)
         else:
             s_id = resp
             result_label.configure(text="You are logged in as "+entry_1_var.get())
             close()
     def register_user():
-        global s_id
+        nonlocal s_id
         if label_entry_3.grid_info() == {}:
             label_entry_1.configure(text="Username:")
             label_entry_2.configure(text="Password:")
@@ -103,7 +108,7 @@ def cli_login():
         nonlocal s_id
         os.system('cls' if os.name.startswith('nt') else 'clear')
         print("Logging in as \"Guest\"...")
-        s_id = "5033c8b3f8372ddd0937fea202d1be28"
+        s_id = database.login_user("guest","")
 
     ctr_c = signal.signal(signal.SIGINT,login_as_guest)
 

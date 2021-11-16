@@ -6,16 +6,22 @@ import pbkdf2_impl
 import os
 import names
 from pprint import pprint
+import crypto_can
+from crypto_can import dec_file_name
 
 def open_con():
     try:
-        con = sqlite3.connect('welcomeUser.db')
+        crypto_can.decrypt_db_with_key_and_create_temp_file()
+        con = sqlite3.connect(dec_file_name)
         return con
     except :
         print("Can't connect to welcomeUser.db !")
         quit()
 
-
+def close_con(con):
+    crypto_can.encrypt_db_with_key_and_store_in_file()
+    con.close()
+    crypto_can.delete_decrypted_db_file()
 
 def random_queries():
     con = open_con()
@@ -26,7 +32,7 @@ def random_queries():
     # print(prettytable.from_db_cursor(cur))
     print(cur.fetchone())
     con.commit()
-    con.close()
+    close_con(con)
 
 def _username_exists(username,con):
     cur = con.cursor()
@@ -83,7 +89,7 @@ def drop_users():
         res = cur.fetchone()
         print("Database-response:",res)
         con.commit()
-    con.close()
+    close_con(con)
 
 def drop_cross():
     con = open_con()
@@ -94,7 +100,7 @@ def drop_cross():
         res = cur.fetchone()
         print("Database-response:",res)
         con.commit()
-    con.close()
+    close_con(con)
 
 
 def create_table_Sudokus():
@@ -109,7 +115,7 @@ def create_table_Sudokus():
     print("Database-response:",res)
 
     con.commit()
-    con.close()
+    close_con(con)
 
 def create_table_cross():
     con = open_con()
@@ -123,7 +129,7 @@ def create_table_cross():
     print("Database-response:",res)
 
     con.commit()
-    con.close()
+    close_con(con)
 
 def create_table_users():
     con = open_con()
@@ -135,12 +141,12 @@ def create_table_users():
     res = cur.fetchone()
     print("Database-response:",res)
     con.commit()
-    con.close()
+    close_con(con)
 
 def register_new_user(username,password):
     con = open_con()
     if _username_exists(username,con):
-        con.close()
+        close_con(con)
         print("username exists already")
         return "exists already"
     cur = con.cursor()
@@ -152,7 +158,7 @@ def register_new_user(username,password):
     res = cur.fetchone()
     print("Database-response:",res)
     con.commit()
-    con.close()
+    close_con(con)
 
 def login_user(username,password):
     con = open_con()
@@ -170,18 +176,18 @@ def login_user(username,password):
             if gen_hash == db_hash:
                 session_id = os.urandom(16).hex()
                 if _set_session_id(session_id,username,con):
-                    con.close()
+                    close_con(con)
                     return session_id
             else:
                 print("Wrong Password!")
-                con.close()
-                return None    
+                close_con(con)
+                return "Wrong Password"  
     else:
         print("Username doesn't exist")
-        con.close()
+        close_con(con)
         return "Username doesn't exist"
     print("Couldn't login")
-    con.close()
+    close_con(con)
 
 def _set_session_id(session_id,username,con):
     cur = con.cursor()
@@ -223,7 +229,7 @@ def load_json_Sudoku_to_db(the_hash,_dict,difficulty):
             res = cur.fetchone()
             print("Database-response:",res)
             con.commit()
-    con.close()
+    close_con(con)
 
 
 def template_json_file():
@@ -246,7 +252,7 @@ def load_codenames_to_Sudokus():
     print(cur.fetchone())
 
     con.commit()
-    con.close()
+    close_con(con)
     
 def show_tables():
     con = open_con()
@@ -279,7 +285,7 @@ def show_tables():
         print("Table Cross:")
         print(prettytable.from_db_cursor(cur))
     
-    con.close()
+    close_con(con)
 
 
 def _get_hashes(con):
@@ -327,7 +333,7 @@ def get_user_and_sud_name_from_session_id(session_id):
     AND Sudokus.rowid = Users.cur_s_rowid;'''
     cur.execute(query,(session_id,))
     res = cur.fetchone()
-    con.close()
+    close_con(con)
     return res
     
 def get_codenames_and_hashes_and_userdata(session_id):
@@ -367,7 +373,7 @@ def get_edited_raw_solved_Sudoku_and_seconds(session_id,hash = None):          #
     cur.execute(query,(session_id,))
     
     res = cur.fetchone()
-    con.close()
+    close_con(con)
     return res
 
 def _update_edited_Sudoku_with_raw(session_id,con):
@@ -398,7 +404,7 @@ def update_edited_Sudoku(session_id,grid,seconds):
     res = cur.fetchone()
     print("Database-response:",res)
     con.commit()
-    con.close()
+    close_con(con)
 
 # create_table(con)
 # alter_table(con)
@@ -419,7 +425,7 @@ def update_edited_Sudoku(session_id,grid,seconds):
 # s_id = login_user("gerald","welcome to hogwarts")
 # con = open_con()
 # hash = _get_hashes(con)
-# con.close()
+# close_con(con)
 # the_grid = json.loads(get_edited_Sudoku(s_id,hash))
 # update_edited_Sudoku(s_id,the_grid)
 

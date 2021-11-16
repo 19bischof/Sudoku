@@ -4,7 +4,6 @@ import tkinter
 import database
 # from controller import s_id
 
-s_id = "5033c8b3f8372ddd0937fea202d1be28"
 def choose_sud(s_id):
     choice_i = None
     wind = tkinter.Tk()
