@@ -1,3 +1,7 @@
+#TODO since now we got the row_quads and the column_quads correctly working we now have to use this information:
+#meaning if the space in a *-quad available is the same as the number of all possible number options for this *-quad then remove this set of numbers from the rest of the 
+#*-quad! Also then look at the (column if row-quad,row if column-quad) !*-quad and see if there is an easy solution to be had (with crude checking if number not duplicate in 
+# !*-quad(row,column))
 from pprint import pprint
 import window
 
@@ -21,21 +25,29 @@ def update_stack():
     update_rows()
     update_columns()
     update_quadrants()
+    update_row_quads()
+    update_column_quads()
     update_cells()  #important that cells is last
 def valid_stack():
     check_if_rows_valid()
     check_if_columns_valid()
     check_if_quadrants_valid()
+    check_if_row_quads_valid()
+    check_if_column_quads_valid()
     check_if_cells_valid()
 def reset_stack():
     reset_rows()
     reset_columns()
     reset_quads()
+    reset_row_quads()
+    reset_column_quads()
     reset_cells()
 def print_stack():
     print_rows()
     print_columns()
     print_quads()
+    print_row_quads()
+    print_column_quads()
     print_cells()
 def reset_quads():
     global quadrants
@@ -140,7 +152,7 @@ def update_columns():
                 columns[c].append(grid[r][c])
     check_if_columns_valid()
 
-def reset_cells():
+def reset_cells():  #cells stores options for each cell (which number could be here)
     global cells
     cells = [[[]for y in range(9)] for x in range(9)]
 
@@ -195,7 +207,100 @@ def check_if_finished():
                 nozero = False
     valid_stack()
     return nozero
-    
+
+def reset_row_quads():
+    global row_quads
+    row_quads = [[ [] for y in range(3)] for x in range(9)]
+
+def print_row_quads():
+    print("row_quads:")
+    for r_no in range(9):
+        print("[{}]:".format(r_no),end="")
+        for i in range(3):
+            for x in row_quads[r_no][i]:
+                print(x,end="",flush=True)
+            print(" ; ",end="",flush=True)
+        print()
+
+def check_if_row_quads_valid():
+    for r_no in range(9):
+        for i in range(3):
+            have = []
+            for e in row_quads[r_no][i]:
+                if e in have:
+                    print("duplicate number in row_quads(r_no,i):", (r_no,i))
+                    print_cells()
+                    close()
+                have.append(e)
+
+def update_row_quads(): #row quads: 2 dim array: for each row there are 3 sections in it (for each quad)
+    global row_quads        #usefule if you are not certain in which cell exactly a pair of numbers go but know
+    reset_row_quads()       #they have to be in a specific quad
+    for r_no in range(9):
+        first_quad_no = int(r_no/3)*3
+        for ind,q_no in enumerate(range(first_quad_no,first_quad_no+3)):
+            space_available = False
+            for i in range(3):
+                if grid[r_no][ind*3+i] == 0:
+                    space_available = True
+            if space_available is False:
+                print("no space in row:{} ind:{}".format(r_no,ind))
+                continue
+            print("before q_no",q_no)
+            for n in nos:
+                if n not in rows[r_no]:
+                    print("before n",n)
+                    if n not in quadrants[q_no]:
+                        print("q_no,n",q_no,n)
+                        row_quads[r_no][ind].append(n)
+                        print("here")
+    check_if_row_quads_valid()
+            
+def reset_column_quads():
+    global column_quads
+    column_quads = [[ [] for y in range(3)] for x in range(9)]
+
+def print_column_quads():
+    print("column_quads:")
+    for c_no in range(9):
+        print("[{}]:".format(c_no),end="")
+        for i in range(3):
+            for x in column_quads[c_no][i]:
+                print(x,end="",flush=True)
+            print(" ; ",end="",flush=True)
+        print()
+
+def check_if_column_quads_valid():
+    for c_no in range(9):
+        for i in range(3):
+            have = []
+            for e in column_quads[c_no][i]:
+                if e in have:
+                    print("duplicate number in column_quads(r_no,i):", (c_no,i))
+                    print_cells()
+                    close()
+                have.append(e)
+                
+def update_column_quads(): #column quads: 2 dim array: for each column there are 3 sections in it (for each quad)
+    global column_quads        #usefule if you are not certain in which cell exactly a pair of numbers go but know
+    reset_column_quads()       #they have to be in a specific quad
+    for c_no in range(9):
+        first_quad_no = int(c_no/3) 
+        for ind,q_no in enumerate(range(first_quad_no,first_quad_no+9,3)):
+            space_available = False
+            for i in range(3):
+                if grid[ind*3+i][c_no] == 0:
+                    space_available = True
+            if space_available is False:
+                print("no space in column:{} ind:{}".format(c_no,ind))
+                continue
+            print("in update_column: q_no:",q_no)
+            for n in nos:
+                if n not in columns[c_no]:
+                    if n not in quadrants[q_no]:
+                        column_quads[c_no][ind].append(n)
+    check_if_column_quads_valid()
+
 def loop():
     reset_stack()
     input("ready:")
@@ -208,10 +313,7 @@ def loop():
             pprint(grid)
             break
     Game_loop()
-#TODO: each row and each column has 3 guarantees (interaction with the quadruples)
-#meaning that even if you don't know to which cell you can know this row has those two
-#numbers in this quad and therefor this row cant have the two numbers as an option
-#anywhere else!
+
 s_id = "5033c8b3f8372ddd0937fea202d1be28"
 def Game_loop():
     winx = window.window(s_id,"c850c5be22fa6169")

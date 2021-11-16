@@ -423,7 +423,7 @@ def update_edited_Sudoku(session_id,grid,seconds):
 # the_grid = json.loads(get_edited_Sudoku(s_id,hash))
 # update_edited_Sudoku(s_id,the_grid)
 
-show_tables()
+# show_tables()
 
 
 # s_id = login_user("gerald","welcome to hogwarts")
