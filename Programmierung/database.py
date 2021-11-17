@@ -214,6 +214,24 @@ def _get_rowids_from_session_id(session_id,con):
     res = cur.fetchone()
     return res
 
+def load_solved_json_Sudoku_to_db(the_hash,_dict):
+    con = open_con()
+    if _Sudoku_table_exists(con):
+        cur = con.cursor()
+        query = '''Select hash from Sudokus where hash = ?'''
+        cur.execute(query,(the_hash,))
+        res = cur.fetchone()
+        if res == None:
+            query = '''
+            UPDATE TABLE Sudokus set Sudoku_solved = ?
+            WHERE hash = ?;
+            '''
+            cur.execute(query,(json.dumps(_dict),the_hash))
+            res = cur.fetchone()
+            print("Database-response:",res)
+            con.commit()
+    close_con(con)
+
 def load_json_Sudoku_to_db(the_hash,_dict,difficulty):
     con = open_con()
     if _Sudoku_table_exists(con):
@@ -325,38 +343,58 @@ def _cur_s_rowid_in_cross(session_id,con):
         return False
     return True
 
-def get_user_and_sud_name_from_session_id(session_id):
+def get_user_from_session_id(session_id):
     con = open_con()
     cur = con.cursor()
+    
+    query = '''Select username from Users
+    WHERE session = ? ;'''
+    cur.execute(query,(session_id,))
+    res = cur.fetchone()
+    close_con(con)
+    return res
+
+def get_user_and_sud_name_from_session_id(session_id):
+
+    con = open_con()
+    cur = con.cursor()
+    if not _valid_session_id(session_id,con):
+        print("session_id is not valid")
+        close_con(con)
+        return
     query = '''Select username,codename from Users,Sudokus
     WHERE session = ? 
     AND Sudokus.rowid = Users.cur_s_rowid;'''
     cur.execute(query,(session_id,))
     res = cur.fetchone()
+    if res == None:
+        print("No current Sudoku selected!")
     close_con(con)
     return res
-    
 def get_codenames_and_hashes_and_userdata(session_id):
     con = open_con()
     if not _valid_session_id(session_id,con):
+        close_con(con)
         return "not valid session_id"
     cur = con.cursor()
     query = '''
     SELECT Sudokus.codename,Sudokus.hash,cross.seconds_played
     FROM Sudokus
-    LEFT JOIN Cross_Sudokus_Users AS cross
-    ON Sudokus.rowid = cross.s_rowid
     LEFT JOIN Users
-    ON session = ?
+    ON session = ? and Users.cur_s_rowid = Sudokus.rowid
+    LEFT JOIN Cross_Sudokus_Users AS cross
+    ON Sudokus.rowid = cross.s_rowid and cross.u_rowid = Users.rowid
     ORDER BY cross.seconds_played DESC;
     '''
     cur.execute(query,(session_id,))
     lot = cur.fetchall()                            #list of tuples
+    close_con(con)
     return lot
 
 def get_edited_raw_solved_Sudoku_and_seconds(session_id,hash = None):          #the method which is called to get a Sudoku from a User (new or already edited)
     con = open_con()    
     if not _valid_session_id(session_id,con):
+        close_con(con)
         return "not valid session_id"
     cur = con.cursor()
     if hash == None:

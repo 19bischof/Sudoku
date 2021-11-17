@@ -26,7 +26,9 @@ class Sudoku:
                         changed[r][c] = 3
         self.changes = changed
     def load_grid_from_db(self,hash = None):
-        g_c,g_r,g_s,seconds = database.get_edited_raw_solved_Sudoku_and_seconds(self.session_id,hash)   #grid_current,grid_raw,grid_solved
+        res = database.get_edited_raw_solved_Sudoku_and_seconds(self.session_id,hash)   #grid_current,grid_raw,grid_solved
+        print(res)
+        g_c,g_r,g_s,seconds = res
         if seconds != None:
             self.seconds = seconds
         self.time_sud = time.time()

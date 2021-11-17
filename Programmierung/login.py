@@ -63,13 +63,20 @@ def tk_login():
             s_id = database.login_user(u_name,pass1)
             result_label.configure(text="You are logged in as "+entry_1_var.get())
             close()
+    def button_press(*arsg):
+        if register_button.grid_info() == {}:
+            try_login()
+        else:
+            register_user()
 
     winx = tkinter.Tk()
     winx.winfo_toplevel().title("login")
     winx.eval('tk::PlaceWindow . center')
     winx.geometry("200x200")
     winx.configure(background=general_bg,)
-    winx.bind("<Return>",lambda t: try_login())
+    winx.bind("<Return>",button_press)
+
+    
 
 
     label_entry_1 = tkinter.Label(winx,text="Username:",background=general_bg)
