@@ -4,6 +4,7 @@
 # *-quad! Also then look at the (column if row-quad,row if column-quad) !*-quad and see if there is an easy solution to be had (with crude checking if number not duplicate in
 # !*-quad(row,column))
 from pprint import pprint
+import window
 import database
 import json
 
@@ -139,9 +140,7 @@ class Solve:
             for c in range(9):
                 if self.grid[r_no][c] != 0:
                     self.rows[r_no].append(self.grid[r_no][c])
-        print("here before",self.rows)
         self.check_if_rows_valid()
-        print("here after",self.rows)
 
     def reset_columns(self):
         self.columns = [[] for x in range(9)]
@@ -260,7 +259,7 @@ class Solve:
                     if self.grid[r_no][ind*3+i] == 0:
                         space_available = True
                 if space_available is False:
-                    print("no space in row:{} ind:{}".format(r_no, ind))
+                    # print("no space in row:{} ind:{}".format(r_no, ind))
                     continue
                 for n in Solve.nos:
                     if n not in self.rows[r_no]:
@@ -306,7 +305,7 @@ class Solve:
                     if self.grid[ind*3+i][c_no] == 0:
                         space_available = True
                 if space_available is False:
-                    print("no space in column:{} ind:{}".format(c_no, ind))
+                    # print("no space in column:{} ind:{}".format(c_no, ind))
                     continue
                 for n in Solve.nos:
                     if n not in self.columns[c_no]:
@@ -320,7 +319,6 @@ class Solve:
         self.guessed = []
 
     def solve_for_one_solution(self):
-        print("new attempt")
         progress = None
         for r in range(9):
             for c in range(9):
@@ -351,8 +349,8 @@ class Solve:
                 if space == len(r_q[i]):
 
                     for n in r_q[i]:
-                        print("reducing row options: len == options:", "(r_no,i,space,len,n)",
-                              (r_no, i, space, len(r_q[i]), n))
+                        # print("reducing row options: len == options:", "(r_no,i,space,len,n)",
+                            #   (r_no, i, space, len(r_q[i]), n))
                         if n in r_q[(i+1) % 3]:
                             if n in self.cells[r_no][((i+1) % 3)*3]:
                                 self.cells[r_no][((i+1) % 3)*3].remove(n)
@@ -384,8 +382,8 @@ class Solve:
                 if space == len(c_q[i]):
 
                     for n in c_q[i]:
-                        print("reducing column options: len == options:", "(c_no,i,space,len,n)",
-                              (c_no, i, space, len(c_q[i]), n))
+                        # print("reducing column options: len == options:", "(c_no,i,space,len,n)",
+                        #       (c_no, i, space, len(c_q[i]), n))
                         if n in c_q[(i+1) % 3]:
                             if n in self.cells[((i+1) % 3)*3][c_no]:
                                 self.cells[((i+1) % 3)*3][c_no].remove(n)
@@ -472,7 +470,9 @@ class Solve:
             if not self.solve_for_one_solution():
                 print("no progress")
                 print("making a guess")
-                self.make_a_new_guess()
+                # self.make_a_new_guess()
+                input()
+                Game_loop(self)
         if not self.finished:
             print("not solved :(")
             
@@ -484,9 +484,12 @@ def main():
     loh = [x[1] for x in lot]  # list of hash
     loh.sort()   #[6, 11, 13, 30, 31, 40, 42, 43, 47, 50, 59, 65, 70, 71, 99]
     loh = [loh[6],loh[ 11],loh[ 13],loh[ 30],loh[ 31],loh[ 40],loh[ 42],loh[ 43],loh[ 47],loh[ 50],loh[ 59],loh[ 65],loh[ 70],loh[ 71],loh[ 99]]
+    loh = [loh[6]]
+    global current_hash
+    current_hash = loh[0]
     not_working_sud = [i for i in range(len(loh))]
     for index,h in enumerate(loh):
-        g, raw, s, seconds = database.get_edited_raw_solved_Sudoku_and_seconds(s_id, h)
+        g, raw, s, seconds ,completed,best_time = database.get_edited_raw_solved_Sudoku_and_seconds_and_completed(s_id, h)
         json_grid = json.loads(raw)
         board = json_grid['board']
         pprint(board)
@@ -506,6 +509,15 @@ def main():
     print("Not solvable:")
     print(not_working_sud)
 
+def Game_loop(inst_of_solve):
+    s_id = "e21cf13722224387af2d80b97714d5d6"
+    print(current_hash)
+    input()
+    wind = window.window(s_id,current_hash)
+    wind.Sudoku_cur.grid = inst_of_solve.grid
+    while wind.running:
+        wind.event_loop()
+    quit()
 # update_quadrants()
 # print_quads()
 # update_rows()

@@ -26,15 +26,16 @@ class Sudoku:
                         changed[r][c] = 3
         self.changes = changed
     def load_grid_from_db(self,hash = None):
-        res = database.get_edited_raw_solved_Sudoku_and_seconds(self.session_id,hash)   #grid_current,grid_raw,grid_solved
+        res = database.get_edited_raw_solved_Sudoku_and_seconds_and_completed(self.session_id,hash)   #grid_current,grid_raw,grid_solved
         print(res)
-        g_c,g_r,g_s,seconds = res
+        g_c,g_r,g_s,seconds,completed,best_time = res
         if seconds != None:
             self.seconds = seconds
         self.time_sud = time.time()
         if g_c == "not valid session_id":
             self.error += g_c
-            return
+            print("not valid session id")
+            quit()
         self.grid = json.loads(g_c)['board']
         self.raw_grid = json.loads(g_r)['board']
         pprint(self.grid)

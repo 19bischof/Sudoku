@@ -122,7 +122,7 @@ def create_table_cross():
     cur = con.cursor() 
     query = '''
     CREATE TABLE IF NOT EXISTS Cross_Sudokus_Users(
-    u_rowid int,s_rowid int,seconds_played int,Sudoku_edited json);
+    u_rowid int,s_rowid int,seconds_played int,completed int,best_time int,Sudoku_edited json);
     '''
     cur.execute(query)
     res = cur.fetchone()
@@ -350,7 +350,7 @@ def get_user_from_session_id(session_id):
     query = '''Select username from Users
     WHERE session = ? ;'''
     cur.execute(query,(session_id,))
-    res = cur.fetchone()
+    res = cur.fetchone()[0]
     close_con(con)
     return res
 
@@ -378,10 +378,10 @@ def get_codenames_and_hashes_and_userdata(session_id):
         return "not valid session_id"
     cur = con.cursor()
     query = '''
-    SELECT Sudokus.codename,Sudokus.hash,cross.seconds_played
+    SELECT Sudokus.codename,Sudokus.hash,cross.seconds_played,cross.completed,cross.best_time
     FROM Sudokus
     LEFT JOIN Users
-    ON session = ? and Users.cur_s_rowid = Sudokus.rowid
+    ON session = ?
     LEFT JOIN Cross_Sudokus_Users AS cross
     ON Sudokus.rowid = cross.s_rowid and cross.u_rowid = Users.rowid
     ORDER BY cross.seconds_played DESC;
@@ -391,7 +391,7 @@ def get_codenames_and_hashes_and_userdata(session_id):
     close_con(con)
     return lot
 
-def get_edited_raw_solved_Sudoku_and_seconds(session_id,hash = None):          #the method which is called to get a Sudoku from a User (new or already edited)
+def get_edited_raw_solved_Sudoku_and_seconds_and_completed(session_id,hash = None):          #the method which is called to get a Sudoku from a User (new or already edited)
     con = open_con()    
     if not _valid_session_id(session_id,con):
         close_con(con)
@@ -403,7 +403,7 @@ def get_edited_raw_solved_Sudoku_and_seconds(session_id,hash = None):          #
     if not _cur_s_rowid_in_cross(session_id,con):
         _update_edited_Sudoku_with_raw(session_id,con)
     query = '''
-    SELECT Sudoku_edited,Sudoku_raw,Sudoku_solved,seconds_played FROM Cross_Sudokus_Users as cross,Users,Sudokus 
+    SELECT Sudoku_edited,Sudoku_raw,Sudoku_solved,seconds_played,completed,best_time FROM Cross_Sudokus_Users as cross,Users,Sudokus 
     WHERE Users.cur_s_rowid = cross.s_rowid
     and Users.rowid = cross.u_rowid
     and Users.session = ?
@@ -422,23 +422,33 @@ def _update_edited_Sudoku_with_raw(session_id,con):
     res = cur.fetchone()
     grid = res[0]
 
-    query = '''Insert into Cross_Sudokus_Users (u_rowid,s_rowid,Sudoku_edited,seconds_played)
-    VALUES (?,?,?,0);'''
+    query = '''Insert into Cross_Sudokus_Users (u_rowid,s_rowid,Sudoku_edited,seconds_played,completed,best_time)
+    VALUES (?,?,?,0,0,0);'''
     cur.execute(query,(u_rowid,s_rowid,grid))
     res = cur.fetchone()
     print("Database-response:",res)
     con.commit()
 
-def update_edited_Sudoku(session_id,grid,seconds):
+def update_edited_Sudoku(session_id,grid,seconds,completed=0):
     con = open_con()
     cur = con.cursor()
     u_rowid,s_rowid = _get_rowids_from_session_id(session_id,con)
     if not _cur_s_rowid_in_cross(session_id,con):
         _update_edited_Sudoku_with_raw(session_id,con)
-    
-    query = '''Update Cross_Sudokus_Users set Sudoku_edited = ?,seconds_played = ?
+    new_best_time = 0
+    if completed:
+        query = '''SELECT best_time FROM Cross_Sudokus_Users AS c,Users
+        WHERE Users.rowid = c.u_rowid AND Users.cur_s_rowid = c.s_rowid
+        AND Users.session = ?
+         '''
+        cur.execute(query,(session_id,))
+        res = cur.fetchone()
+        cur_best_time = res[0]
+        if seconds < cur_best_time or cur_best_time == 0:
+            new_best_time = seconds
+    query = '''Update Cross_Sudokus_Users set Sudoku_edited = ?,seconds_played = ?,completed = ?,best_time = ?
      where u_rowid = ? and s_rowid = ?;'''
-    cur.execute(query,(json.dumps(grid),seconds,u_rowid,s_rowid))
+    cur.execute(query,(json.dumps(grid),seconds,completed,new_best_time,u_rowid,s_rowid))
     res = cur.fetchone()
     print("Database-response:",res)
     con.commit()

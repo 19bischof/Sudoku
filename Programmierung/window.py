@@ -13,7 +13,7 @@ class window:
     def __init__(self, s_id,hash):
         self.running = True
         self.Sudoku_cur = Sudoku(s_id,hash=hash)
-
+        
         if len(self.Sudoku_cur.error) != 0:
             print(self.Sudoku_cur.error)
             quit()
