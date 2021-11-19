@@ -16,9 +16,7 @@ def choose_sud(s_id):
     los = ["0 s" if x[2] is None else str(x[2]) + " s" for x in lot]                   #list of seconds
     loc = ["Done" if x[3]==1 else "Not Done" for x in lot]          #list of completed
     lob = ["0 s" if x[4] == None or x[4] == 0 else x[4] for x in lot]                    #list of best_time
-    print("loc",loc,"lob",lob)
     
-
 
     scroll = Scrollbar(wind)
 
@@ -54,6 +52,7 @@ def choose_sud(s_id):
             return
         s = s[0][1:]    #from tuple to string with I in front to number in string
         s = int(s)      #to int
+        s -= 1          #because first element has value 1
         choice_i = s
         
     def chosen(*args):
@@ -69,11 +68,8 @@ def choose_sud(s_id):
     scroll.grid(row=0,column=1,sticky="ns")
 
 
-    def print_info(*args):
-        print(tree.column(0),tree.column(1),tree.column(2),tree.column(3))
 
 
-    wind.bind("x",print_info)
         
 
 
@@ -92,7 +88,6 @@ def choose_sud(s_id):
 
 
 
-print(choose_sud("d051467be9782163e69fda1679df66b9"))
 
 
 

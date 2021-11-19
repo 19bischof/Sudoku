@@ -85,8 +85,10 @@ class window:
                         self.render_again()
 
     def filter_numpad(self, key):  # filter and return ascii value of 0-9 if numpad was used
-        if 1073741912 < key < 1073741922:
+        if 1073741912 < key < 1073741923:
             key -= 1073741912
+            if key == 10:           #on numpad 0 is 10
+                key = 0
             key += 48
         return key
 

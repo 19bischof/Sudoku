@@ -30,10 +30,10 @@ def tk_login():
         resp = database.login_user(entry_1_var.get().strip(),entry_2_var.get().strip())
         if resp == "Username doesn't exist":
             result_label.configure(text="User and Password do not exist")
-            result_label.grid(row=7)
-            register_button.grid(row=6)
+            result_label.grid(row=8)
+            register_button.grid(row=7)
         elif resp == "Wrong Password":
-            result_label.grid(row=7)
+            result_label.grid(row=8)
             result_label.configure(text=resp)
         else:
             s_id = resp
@@ -63,8 +63,9 @@ def tk_login():
             s_id = database.login_user(u_name,pass1)
             result_label.configure(text="You are logged in as "+entry_1_var.get())
             close()
+
     def button_press(*arsg):
-        if register_button.grid_info() == {}:
+        if entry3.grid_info() == {}:
             try_login()
         else:
             register_user()
