@@ -13,7 +13,7 @@ class window:
     def __init__(self, s_id,hash):
         self.running = True
         self.Sudoku_cur = Sudoku(s_id,hash=hash)
-        
+        self.completed_sud = False
         if len(self.Sudoku_cur.error) != 0:
             print(self.Sudoku_cur.error)
             quit()
@@ -55,9 +55,12 @@ class window:
                                 if res == "bad":
                                     self.highlighted[self.in_focus[0]
                                                      ][self.in_focus[1]] = 4
-                                if res == "reset":
+                                elif res == "reset":
                                     self.highlighted[self.in_focus[0]
                                                      ][self.in_focus[1]] = 0
+                                elif res == "completed":
+                                    self.completed_sud = True
+                                    self.running = False
                                 self.render_again()
 
                 if event.type == pygame.MOUSEMOTION:
@@ -83,7 +86,8 @@ class window:
                         index, iindex = self.get_index_from_rect_or_pos(pos)
                         self.in_focus = (index, iindex)
                         self.render_again()
-
+        if self.running is False:
+            pygame.quit()
     def filter_numpad(self, key):  # filter and return ascii value of 0-9 if numpad was used
         if 1073741912 < key < 1073741923:
             key -= 1073741912

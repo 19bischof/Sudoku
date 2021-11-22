@@ -9,9 +9,10 @@ class Sudoku:
     def __init__(self,s_id,hash = None):
         self.error = ""
         print(hash)
-        self.seconds = 0
+        self.old_seconds = 0
         self.session_id = s_id
         self.load_grid_from_db(hash)    
+        self.completed = False
         self.username,self.codename = database.get_user_and_sud_name_from_session_id(self.session_id)
         self.hash = hash
 
@@ -29,8 +30,12 @@ class Sudoku:
         res = database.get_edited_raw_solved_Sudoku_and_seconds_and_completed(self.session_id,hash)   #grid_current,grid_raw,grid_solved
         print(res)
         g_c,g_r,g_s,seconds,completed,best_time = res
+        if completed:
+            print("resetting...")
+            g_c = g_r
+            time.sleep(1)
         if seconds != None:
-            self.seconds = seconds
+            self.old_seconds = seconds
         self.time_sud = time.time()
         if g_c == "not valid session_id":
             self.error += g_c
@@ -45,9 +50,10 @@ class Sudoku:
         # self.solved_grid = json.loads(g_s)['board']
 
     def update_db_with_data(self):
-        seconds_on_sud = self.seconds + int(time.time() - self.time_sud)
+        seconds_on_sud = self.old_seconds + int(time.time() - self.time_sud)
         print(seconds_on_sud,"seconds!")
-        database.update_edited_Sudoku(self.session_id,{'board':self.grid},seconds_on_sud)
+        database.update_edited_Sudoku(self.session_id,{'board':self.grid},seconds_on_sud,self.completed)
+
     def set_value(self,i,ii,value):
         if value == 0:
             self.grid[i][ii]= 0
@@ -58,8 +64,18 @@ class Sudoku:
             if resp:
                 print("Help: This number already exists in its",resp)
                 return "bad"
-        return None
-
+        else:
+            nozero = True
+            print("checking")
+            for r in range(9):
+                for c in range(9):
+                    if self.grid[r][c] == 0:
+                        nozero = False
+            if nozero == True:
+                print("well_lets end it here!")
+                self.completed = True
+                self.update_db_with_data()
+                return "completed"
     
 
 

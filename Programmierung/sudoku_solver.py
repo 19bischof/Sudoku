@@ -7,6 +7,7 @@ from pprint import pprint
 import window
 import database
 import json
+import time
 
 
 class Solve:
@@ -470,9 +471,9 @@ class Solve:
             if not self.solve_for_one_solution():
                 print("no progress")
                 print("making a guess")
-                # self.make_a_new_guess()
-                input()
-                Game_loop(self)
+                self.make_a_new_guess()
+                # input()
+                # Game_loop(self)
         if not self.finished:
             print("not solved :(")
             
@@ -483,8 +484,9 @@ def main():
     lot = database.get_codenames_and_hashes_and_userdata(s_id)
     loh = [x[1] for x in lot]  # list of hash
     loh.sort()   #[6, 11, 13, 30, 31, 40, 42, 43, 47, 50, 59, 65, 70, 71, 99]
-    loh = [loh[6],loh[ 11],loh[ 13],loh[ 30],loh[ 31],loh[ 40],loh[ 42],loh[ 43],loh[ 47],loh[ 50],loh[ 59],loh[ 65],loh[ 70],loh[ 71],loh[ 99]]
-    loh = [loh[6]]
+    # loh = [loh[6],loh[ 11],loh[ 13],loh[ 30],loh[ 31],loh[ 40],loh[ 42],loh[ 43],loh[ 47],loh[ 50],loh[ 59],loh[ 65],loh[ 70],loh[ 71],loh[ 99]]
+    loh = [loh[0]]
+    s_old = time.time()
     global current_hash
     current_hash = loh[0]
     not_working_sud = [i for i in range(len(loh))]
@@ -506,6 +508,10 @@ def main():
         solved = Solve(board)
         if solved.finished:
             not_working_sud.remove(index)
+            the_taken_time = int(seconds + time.time() - s_old)
+            # the_taken_time = 9999999
+            database.update_edited_Sudoku(s_id,{'board':solved.grid},the_taken_time,0)
+            print("solved :)")
     print("Not solvable:")
     print(not_working_sud)
 

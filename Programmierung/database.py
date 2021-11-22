@@ -444,6 +444,7 @@ def update_edited_Sudoku(session_id,grid,seconds,completed=0):
         cur.execute(query,(session_id,))
         res = cur.fetchone()
         cur_best_time = res[0]
+        print("cur_best_time:",cur_best_time,"seconds:",seconds)
         if seconds < cur_best_time or cur_best_time == 0:
             new_best_time = seconds
     query = '''Update Cross_Sudokus_Users set Sudoku_edited = ?,seconds_played = ?,completed = ?,best_time = ?
