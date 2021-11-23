@@ -64,18 +64,18 @@ class Sudoku:
             if resp:
                 print("Help: This number already exists in its",resp)
                 return "bad"
-        else:
-            nozero = True
-            print("checking")
-            for r in range(9):
-                for c in range(9):
-                    if self.grid[r][c] == 0:
-                        nozero = False
-            if nozero == True:
-                print("well_lets end it here!")
-                self.completed = True
-                self.update_db_with_data()
-                return "completed"
+            else:
+                nozero = True
+                print("checking")
+                for r in range(9):
+                    for c in range(9):
+                        if self.grid[r][c] == 0:
+                            nozero = False
+                if nozero == True:
+                    print("well_lets end it here!")
+                    self.completed = True
+                    self.update_db_with_data()
+                    return "completed"
     
 
 

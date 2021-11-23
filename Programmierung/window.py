@@ -6,7 +6,7 @@ from Sudoku import Sudoku
 
 class window:
     colors = {"white":(255,255,255),"bright_red":(244,40,40),"dark_red":(145,42,42),"grey":(145,156,154),
-    "yellow":(233,239,59),"bright_green":(79,179,105),"dark_blue":(0,0,102),"black":(0,0,0)}
+    "yellow":(233,239,59),"bright_green":(79,179,105),"dark_blue":(0,0,102),"bright_blue":(0, 208, 255),"black":(0,0,0)}
     # colors = [(255, 255, 255), (244, 40, 40), (145, 42, 42), (145, 156, 154),
     #           (233, 239, 59),(79, 179, 105),(0,0,102)]  # white, bright_red, dark_red, grey, yellow,bright_green,dark_blue
 
@@ -23,6 +23,7 @@ class window:
         self.pressed = False
         self.rects = []
         self.highlighted = self.Sudoku_cur.changes        #0=normal,1=selected,2=mousedown,3=changed_value,4=changed_and_bad_value
+        self.number_cur = 0                             #stores the number currently highlighted so all other are as well
         pygame.init()
         pygame.font.init()
         pygame.display.set_caption('Sudoku - '+self.Sudoku_cur.username)
@@ -61,14 +62,15 @@ class window:
                                 elif res == "completed":
                                     self.completed_sud = True
                                     self.running = False
+                                self.number_cur = self.Sudoku_cur.grid[index][iindex]
                                 self.render_again()
 
                 if event.type == pygame.MOUSEMOTION:
                     if self.pressed:
                         pos = pygame.mouse.get_pos()
                         if pos != None:
-                            index, iindex = self.get_index_from_rect_or_pos(
-                                pos)
+                            index, iindex = self.get_index_from_rect_or_pos(pos)
+                            self.number_cur = self.Sudoku_cur.grid[index][iindex]
                             self.in_focus = (index, iindex)
                             self.render_again()
 
@@ -77,6 +79,7 @@ class window:
                     if pos != None:
                         index, iindex = self.get_index_from_rect_or_pos(pos)
                         self.in_focus = (index, iindex)
+                        self.number_cur = self.Sudoku_cur.grid[index][iindex]
                         self.pressed = True
                         self.render_again()
                 if event.type == pygame.MOUSEBUTTONUP:
@@ -131,6 +134,8 @@ class window:
                 if self.pressed:
                     return window.colors['dark_red']
                 return window.colors['bright_red']
+            if self.Sudoku_cur.grid[row][column] == self.number_cur and self.number_cur != 0:
+                return window.colors['bright_blue']
         return window.colors[c_map[self.highlighted[row][column]]]
 
     def show_background(self):

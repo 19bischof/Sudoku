@@ -9,7 +9,25 @@ def choose_sud(s_id):
     choice_i = None
     wind = tkinter.Tk()
     
+    def restart_sud(*args):
+        print(*args)
+
+    def sortby(index):
+        rows = [[] for x in lon]
+        for index,n in enumerate(lon):
+            rows[index].append(n)
+        for index,s in enumerate(los):
+            rows[index].append(s)
+        for index,c in enumerate(loc):
+            rows[index].append(c)
+        for index,b in enumerate(lob):
+            rows[index].append(b)                
+        sort(rows)#sort by list column that is the parameter #TODO
+        for i,r in enumerate(rows):
+            tree.insert('',i,values = r)
+
     username = database.get_user_from_session_id(s_id)
+    global lot,lon,loh,los,loc,lob
     lot = database.get_codenames_and_hashes_and_userdata(s_id)
     lon = [x[0] for x in lot]                   #list of names
     loh = [x[1] for x in lot]                   #list of hash
@@ -22,10 +40,12 @@ def choose_sud(s_id):
 
     columns = ['Names','seconds','completed','best_time']
     tree = ttk.Treeview(wind,columns=columns,show='headings',selectmode='browse')
-    tree.heading(column=0,text='Names')
-    tree.heading(column=1,text='Seconds Played')
-    tree.heading(column=2,text='Completed')
-    tree.heading(column=3,text='Fastest Time')
+    pcorn = Menu(tree,tearoff=0)
+    pcorn.add_command(label="Restart",command=restart_sud)
+    tree.heading(column=0,text='Names',command=sortby(0))
+    tree.heading(column=1,text='Seconds Played',command=sortby(0))
+    tree.heading(column=2,text='Completed',command=sortby(0))
+    tree.heading(column=3,text='Fastest Time',command=sortby(0))
     rows = [[] for x in lon]
     for index,n in enumerate(lon):
         rows[index].append(n)
@@ -44,6 +64,8 @@ def choose_sud(s_id):
     tree.column(2,width=112)
     tree.column(3,width=90)
 
+    tree.selection_set('I001')
+
     def selected(*args):
         nonlocal choice_i
         s = tree.selection()
@@ -58,9 +80,17 @@ def choose_sud(s_id):
     def chosen(*args):
         wind.destroy()
 
+    def popup(event):
+        print("x:",event.x,"y:",event.y,dir(event),"delta:",event.delta,"num:",event.num)
+        # tree.selection(event)
+        tree.event_generate('<Button-1>',x=event.x,y=event.y)
+        pcorn.tk_popup(event.x_root,event.y_root,0)
+
+
     tree.configure(yscrollcommand=scroll.set)
     scroll.configure(command=tree.yview)
 
+    tree.bind('<Button-3>',popup)
     tree.bind('<Double-Button-1>',chosen)
     tree.bind('<<TreeviewSelect>>', selected)
 
@@ -94,7 +124,8 @@ def choose_sud(s_id):
 
 
 
-
+s_id = database.login_user('guest',"")
+choose_sud(s_id)
 
 
 
