@@ -12,7 +12,10 @@ def choose_sud(s_id):
     def restart_sud(*args):
         print(*args)
 
-    def sortby(index):
+    def sortby(col_index):
+        tree.selection_remove(tree.get_children())
+
+
         rows = [[] for x in lon]
         for index,n in enumerate(lon):
             rows[index].append(n)
@@ -22,7 +25,10 @@ def choose_sud(s_id):
             rows[index].append(c)
         for index,b in enumerate(lob):
             rows[index].append(b)                
-        sort(rows)#sort by list column that is the parameter #TODO
+        if col_index %2 == 0:
+            rows.sort(key=lambda x:x[col_index])
+        elif col_index %2 == 1:
+            rows.sort(key=lambda x:int(x[col_index][:len(x[col_index])-2]),reverse = True)
         for i,r in enumerate(rows):
             tree.insert('',i,values = r)
 
@@ -33,7 +39,10 @@ def choose_sud(s_id):
     loh = [x[1] for x in lot]                   #list of hash
     los = ["0 s" if x[2] is None else str(x[2]) + " s" for x in lot]                   #list of seconds
     loc = ["Done" if x[3]==1 else "Not Done" for x in lot]          #list of completed
-    lob = ["0 s" if x[4] == None or x[4] == 0 else x[4] for x in lot]                    #list of best_time
+    lob = ["0 s" if x[4] == None or x[4] == 0 else str(x[4]) + " s" for x in lot]                    #list of best_time
+    # los = [x[2] if x[2] != None else 0 for x in lot] 
+
+    # lob = [x[4] if x[4] != None else 0 for x in lot] 
     
 
     scroll = Scrollbar(wind)
@@ -42,10 +51,10 @@ def choose_sud(s_id):
     tree = ttk.Treeview(wind,columns=columns,show='headings',selectmode='browse')
     pcorn = Menu(tree,tearoff=0)
     pcorn.add_command(label="Restart",command=restart_sud)
-    tree.heading(column=0,text='Names',command=sortby(0))
-    tree.heading(column=1,text='Seconds Played',command=sortby(0))
-    tree.heading(column=2,text='Completed',command=sortby(0))
-    tree.heading(column=3,text='Fastest Time',command=sortby(0))
+    tree.heading(column=0,text='Names',command=lambda :sortby(0))
+    tree.heading(column=1,text='Seconds Played',command=lambda :sortby(1))
+    tree.heading(column=2,text='Completed',command=lambda :sortby(2))
+    tree.heading(column=3,text='Fastest Time',command=lambda :sortby(3))
     rows = [[] for x in lon]
     for index,n in enumerate(lon):
         rows[index].append(n)
@@ -70,7 +79,7 @@ def choose_sud(s_id):
         nonlocal choice_i
         s = tree.selection()
         if len(s) != 1:
-            print("well something went wrong!")
+            #nothing selected again after clicking on heading
             return
         s = s[0][1:]    #from tuple to string with I in front to number in string
         s = int(s)      #to int
@@ -78,7 +87,8 @@ def choose_sud(s_id):
         choice_i = s
         
     def chosen(*args):
-        wind.destroy()
+        if tree.selection():
+            wind.destroy()
 
     def popup(event):
         print("x:",event.x,"y:",event.y,dir(event),"delta:",event.delta,"num:",event.num)
@@ -123,9 +133,9 @@ def choose_sud(s_id):
 
 
 
-
-s_id = database.login_user('guest',"")
-choose_sud(s_id)
+if __name__ == "__main__":
+    s_id = database.login_user('solution',"cillitbang")
+    choose_sud(s_id)
 
 
 
