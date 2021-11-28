@@ -34,6 +34,7 @@ class Sudoku:
             print("resetting...")
             g_c = g_r
             time.sleep(1)
+            seconds = 0
         if seconds != None:
             self.old_seconds = seconds
         self.time_sud = time.time()
@@ -43,6 +44,7 @@ class Sudoku:
             quit()
         self.grid = json.loads(g_c)['board']
         self.raw_grid = json.loads(g_r)['board']
+        self.best_time = best_time
         pprint(self.grid)
         pprint(self.raw_grid)
         self.determine_changes()

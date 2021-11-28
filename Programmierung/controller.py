@@ -22,7 +22,7 @@ def Game_loop(chosen_hash):
     else:
         new_loop = False
 
-def new_loop():
+def do_new_loop():
     while new_loop:
         chosen_hash = choose_name.choose_sud(s_id)
         print("Hash:",chosen_hash)
@@ -30,5 +30,5 @@ def new_loop():
             break
         Game_loop(chosen_hash)
 
-new_loop()
+do_new_loop()
 print("Thanks for playing :)")

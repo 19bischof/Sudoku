@@ -70,6 +70,9 @@ class window:
                         pos = pygame.mouse.get_pos()
                         if pos != None:
                             index, iindex = self.get_index_from_rect_or_pos(pos)
+                            if (index,iindex) == (-1,-1):
+                                self.number_cur = 0
+                        else:
                             self.number_cur = self.Sudoku_cur.grid[index][iindex]
                             self.in_focus = (index, iindex)
                             self.render_again()
@@ -78,8 +81,11 @@ class window:
                     pos = pygame.mouse.get_pos()
                     if pos != None:
                         index, iindex = self.get_index_from_rect_or_pos(pos)
+                        if (index,iindex) == (-1,-1):
+                            self.number_cur = 0
+                        else:
+                            self.number_cur = self.Sudoku_cur.grid[index][iindex]
                         self.in_focus = (index, iindex)
-                        self.number_cur = self.Sudoku_cur.grid[index][iindex]
                         self.pressed = True
                         self.render_again()
                 if event.type == pygame.MOUSEBUTTONUP:

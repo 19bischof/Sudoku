@@ -435,18 +435,22 @@ def update_edited_Sudoku(session_id,grid,seconds,completed=0):
     u_rowid,s_rowid = _get_rowids_from_session_id(session_id,con)
     if not _cur_s_rowid_in_cross(session_id,con):
         _update_edited_Sudoku_with_raw(session_id,con)
-    new_best_time = 0
+    
+    query = '''SELECT best_time FROM Cross_Sudokus_Users AS c,Users
+    WHERE Users.rowid = c.u_rowid AND Users.cur_s_rowid = c.s_rowid
+    AND Users.session = ?
+        '''
+    cur.execute(query,(session_id,))
+    res = cur.fetchone()
+    cur_best_time = res[0]
+    print("cur_best_time:",cur_best_time,"seconds:",seconds)
     if completed:
-        query = '''SELECT best_time FROM Cross_Sudokus_Users AS c,Users
-        WHERE Users.rowid = c.u_rowid AND Users.cur_s_rowid = c.s_rowid
-        AND Users.session = ?
-         '''
-        cur.execute(query,(session_id,))
-        res = cur.fetchone()
-        cur_best_time = res[0]
-        print("cur_best_time:",cur_best_time,"seconds:",seconds)
         if seconds < cur_best_time or cur_best_time == 0:
             new_best_time = seconds
+        else:
+            new_best_time = cur_best_time
+    else:
+        new_best_time = cur_best_time
     query = '''Update Cross_Sudokus_Users set Sudoku_edited = ?,seconds_played = ?,completed = ?,best_time = ?
      where u_rowid = ? and s_rowid = ?;'''
     cur.execute(query,(json.dumps(grid),seconds,completed,new_best_time,u_rowid,s_rowid))
@@ -478,7 +482,7 @@ def update_edited_Sudoku(session_id,grid,seconds,completed=0):
 # the_grid = json.loads(get_edited_Sudoku(s_id,hash))
 # update_edited_Sudoku(s_id,the_grid)
 
-# show_tables()
+show_tables()
 
 
 # s_id = login_user("gerald","welcome to hogwarts")

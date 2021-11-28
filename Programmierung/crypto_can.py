@@ -1,6 +1,6 @@
 import os
 from cryptography import fernet
-
+import time
 enc_file_name = "welcomeUser.enc"
 dec_file_name = "welcomeUser1.db"
 
@@ -26,11 +26,15 @@ def read_enc_db_file():
         original = db.read()
     return original
 def write_decrypted_db_file(dec_data):
+    time.sleep(0.1)
     with open(dec_file_name, 'wb') as db_file:
         db_file.write(dec_data)
 def delete_decrypted_db_file():
     os.remove(dec_file_name)
+def delete_encrypted_db_file():
+    os.remove(enc_file_name)
 def write_encrypted_db_file(enc_data):
+    time.sleep(0.1)
     with open(enc_file_name, 'wb') as db_file:
         db_file.write(enc_data)
 

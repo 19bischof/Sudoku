@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from pprint import pprint
 import tkinter
+from types import NoneType
 import database
 # from controller import s_id
 
@@ -10,9 +11,11 @@ def choose_sud(s_id):
     wind = tkinter.Tk()
     
     def restart_sud(*args):
-        print(*args)
+        # print("hello???")
+        chosen(None,reset=True)
 
     def sortby(col_index):
+        global rows
         tree.selection_remove(tree.get_children())
 
 
@@ -43,7 +46,7 @@ def choose_sud(s_id):
     # los = [x[2] if x[2] != None else 0 for x in lot] 
 
     # lob = [x[4] if x[4] != None else 0 for x in lot] 
-    
+
 
     scroll = Scrollbar(wind)
 
@@ -73,7 +76,7 @@ def choose_sud(s_id):
     tree.column(2,width=112)
     tree.column(3,width=90)
 
-    tree.selection_set('I001')
+    # tree.selection_set('I001')
 
     def selected(*args):
         nonlocal choice_i
@@ -81,13 +84,26 @@ def choose_sud(s_id):
         if len(s) != 1:
             #nothing selected again after clicking on heading
             return
+        choice_i = s[0]
         s = s[0][1:]    #from tuple to string with I in front to number in string
-        s = int(s)      #to int
+        print("this is s",s)
+        s = int(s,16)      #to int
         s -= 1          #because first element has value 1
-        choice_i = s
         
-    def chosen(*args):
+    def chosen(event,reset = False):
+        nonlocal choice_i
         if tree.selection():
+            # print("we are here now with ",choice_i)
+            # print("coice_i",choice_i,tree.item(choice_i))
+            ind = lon.index(tree.item(choice_i)['values'][0])
+            # print("index: ",ind)
+            # print("the name is",lon[ind])
+            # print("the hash is",loh[ind])
+            if loc[ind] == "Done" and reset == False:
+                popup(event)
+                return
+            print("in chosen reset:",reset)
+            choice_i = ind
             wind.destroy()
 
     def popup(event):
@@ -100,7 +116,6 @@ def choose_sud(s_id):
     tree.configure(yscrollcommand=scroll.set)
     scroll.configure(command=tree.yview)
 
-    tree.bind('<Button-3>',popup)
     tree.bind('<Double-Button-1>',chosen)
     tree.bind('<<TreeviewSelect>>', selected)
 
@@ -123,9 +138,12 @@ def choose_sud(s_id):
 
     wind.mainloop()
 
-    if choice_i is not None:
+    if type(choice_i) not in (str,NoneType):
+        
+        print(loh[choice_i])
         return loh[choice_i]
-
+    else:
+        return
 
 
 

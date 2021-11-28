@@ -480,12 +480,14 @@ class Solve:
 
 
 def main():
-    s_id = database.login_user("solution", "cillitbang")
+    s_id = database.login_user("unbekannt", "unknown")
     lot = database.get_codenames_and_hashes_and_userdata(s_id)
+    lon = [x[0] for x in lot] #list of names
+    ii = lon.index("Josephine") #if you want a specific sudoku solved
     loh = [x[1] for x in lot]  # list of hash
-    loh.sort()   #[6, 11, 13, 30, 31, 40, 42, 43, 47, 50, 59, 65, 70, 71, 99]
+    # loh.sort()   #[6, 11, 13, 30, 31, 40, 42, 43, 47, 50, 59, 65, 70, 71, 99]
     # loh = [loh[6],loh[ 11],loh[ 13],loh[ 30],loh[ 31],loh[ 40],loh[ 42],loh[ 43],loh[ 47],loh[ 50],loh[ 59],loh[ 65],loh[ 70],loh[ 71],loh[ 99]]
-    loh = [loh[0]]
+    loh = [loh[ii]]
     s_old = time.time()
     global current_hash
     current_hash = loh[0]
@@ -510,6 +512,7 @@ def main():
             not_working_sud.remove(index)
             the_taken_time = int(seconds + time.time() - s_old)
             # the_taken_time = 9999999
+            pprint(solved.grid)
             database.update_edited_Sudoku(s_id,{'board':solved.grid},the_taken_time,0)
             print("solved :)")
     print("Not solvable:")
